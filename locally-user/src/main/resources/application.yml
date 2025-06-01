@@ -52,6 +52,8 @@ logging:
         SQL: DEBUG
       springframework:
         mail: DEBUG
+    org.springframework.data.redis: DEBUG
+    io.lettuce: DEBUG
 
 jwt:
   secret: ${JWT_SECRET}
