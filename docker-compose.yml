@@ -1,0 +1,34 @@
+services:
+  backend-engine:
+    build:
+      context: ./locally-backend-engine
+    image: locally-backend-engine
+    container_name: backend-engine
+    ports:
+      - "8080:8080"
+    networks:
+      - locally-network
+
+  user-service:
+    build:
+      context: ./locally-user
+    image: locally-user
+    container_name: user-service
+    ports:
+      - "8081:8080"
+    networks:
+      - locally-network
+
+  delivery-partner-service:
+    build:
+      context: ./locally-delivery-partner
+    image: locally-delivery-partner
+    container_name: delivery-partner-service
+    ports:
+      - "8082:8080"
+    networks:
+      - locally-network
+
+networks:
+  locally-network:
+    driver: bridge

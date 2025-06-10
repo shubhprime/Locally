@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 // TODO: Implement refresh token validation
 @RestController
-@RequestMapping("/api/token")
+@RequestMapping("/api/user/v1/token")
 public class TokenController {
     @Autowired
     private JwtUtil jwtUtil;

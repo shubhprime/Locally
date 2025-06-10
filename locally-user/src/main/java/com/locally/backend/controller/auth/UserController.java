@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Date;
 
 @RestController
-@RequestMapping("/api/auth/user")
+@RequestMapping("/api/user/v1/auth")
 public class UserController {
     @Autowired
     private UserService userService;

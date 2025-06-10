@@ -10,6 +10,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class UpdatedDeliveryRequest {
+    private Long deliveryId;
+    private Long senderId;
     private String updatedPickUpAddress;
     private String updatedDropOffAddress;
     private String updatedPackageDetails;

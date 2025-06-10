@@ -46,6 +46,7 @@ public class User implements Serializable {
 
     @Column(nullable = false)
     private String phoneNumber;
+    @Column(nullable = true)
     private String alternativePhoneNumber;
 
     @Column(nullable = false)
