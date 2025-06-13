@@ -106,17 +106,7 @@ public class PasswordServiceImpl implements PasswordService {
          */
         try {
             String key;
-            if ("EMAIL".equals(otpVerificationRequest.getRequestMedium())) {
-                key = "otp:" + otpVerificationRequest.getRequestValue();
-            } else if ("PHONE_NUMBER".equals(otpVerificationRequest.getRequestMedium())) {
-                key = "otp:" + otpVerificationRequest.getRequestValue();
-            } else {
-                return DeliveryPartnerResponse.builder()
-                        .responseCode(DeliveryPartnerUtils.VERIFY_OTP_FAILED_CODE)
-                        .success(DeliveryPartnerUtils.VERIFY_OTP_FAILED_SUCCESS)
-                        .responseMessage(DeliveryPartnerUtils.VERIFY_OTP_FAILED_MESSAGE)
-                        .build();
-            }
+            key = "otp:" + otpVerificationRequest.getEmail();
 
             boolean isValid = otpService.validateOtp(key, otpVerificationRequest.getOtp());
 
@@ -149,7 +139,7 @@ public class PasswordServiceImpl implements PasswordService {
         try {
             DeliveryPartner deliveryPartner;
             if ("EMAIL".equals(resetPasswordRequest.getRequestMedium())) {
-                deliveryPartner = deliveryPartnerRepository.findByEmail(resetPasswordRequest.getRequestValue())
+                deliveryPartner = deliveryPartnerRepository.findByEmailAndIsDeletedFalse(resetPasswordRequest.getRequestValue())
                         .orElseThrow(() -> new RuntimeException("User not found"));
             } else if ("PHONE_NUMBER".equals(resetPasswordRequest.getRequestMedium())) {
                 deliveryPartner = deliveryPartnerRepository.findByPhoneNumber(resetPasswordRequest.getRequestValue())
@@ -191,7 +181,7 @@ public class PasswordServiceImpl implements PasswordService {
          */
         try {
             String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
-            DeliveryPartner deliveryPartner = deliveryPartnerRepository.findByEmail(currentUsername)
+            DeliveryPartner deliveryPartner = deliveryPartnerRepository.findByEmailAndIsDeletedFalse(currentUsername)
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
             if(!deliveryPartner.getIsVerified()) {

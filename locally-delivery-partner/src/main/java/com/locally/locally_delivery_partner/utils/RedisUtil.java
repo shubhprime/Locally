@@ -14,6 +14,7 @@ public class RedisUtil {
     private StringRedisTemplate redisTemplate;
 
     private static final String DEBUG_BLACKLIST_PREFIX = "blacklist:";
+    private static final String STATUS_PREFIX = "status:";
 
     // Store the token with expiry equal to JWT expiration
     public void blacklistToken(String token, Date expirationDate) {
@@ -47,5 +48,66 @@ public class RedisUtil {
             e.printStackTrace();
             return false; // Default to "not blacklisted" if Redis fails
         }
+    }
+
+    /**
+     * Set availability status in Redis with a TTL. With TTL
+     */
+    public void setDeliveryPartnerStatus(String email, String status, long durationMinutes) {
+        String key = STATUS_PREFIX + email;
+        try {
+            redisTemplate.opsForValue().set(key, status, durationMinutes, TimeUnit.MINUTES);
+            System.out.println("[RedisUtil] Set status: " + key + " = " + status);
+        } catch (Exception e) {
+            System.out.println("[RedisUtil] Error setting status: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Set availability status in Redis with a TTL. Without TTL
+     */
+    public void setDeliveryPartnerStatus(String email, String status) {
+        String key = "status:" + email;
+        redisTemplate.opsForValue().set(key, status);
+    }
+
+    /**
+     * Get availability status from Redis.
+     */
+    public String getDeliveryPartnerStatus(String email) {
+        String key = STATUS_PREFIX + email;
+        try {
+            String status = redisTemplate.opsForValue().get(key);
+            System.out.println("[RedisUtil] Get status: " + key + " => " + status);
+            return status;
+        } catch (Exception e) {
+            System.out.println("[RedisUtil] Error getting status: " + e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Delete availability status explicitly (optional).
+     */
+    public void clearDeliveryPartnerStatus(String email) {
+        String key = STATUS_PREFIX + email;
+        try {
+            redisTemplate.delete(key);
+            System.out.println("[RedisUtil] Cleared status: " + key);
+        } catch (Exception e) {
+            System.out.println("[RedisUtil] Error clearing status: " + e.getMessage());
+        }
+    }
+
+    public void setWithExpiry(String key, String value, long seconds) {
+        redisTemplate.opsForValue().set(key, value, seconds, TimeUnit.SECONDS);
+    }
+
+    public String get(String key) {
+        return redisTemplate.opsForValue().get(key);
+    }
+
+    public void delete(String key) {
+        redisTemplate.delete(key);
     }
 }

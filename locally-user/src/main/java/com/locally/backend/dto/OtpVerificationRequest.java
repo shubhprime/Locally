@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class OtpVerificationRequest {
-    private String requestMedium;
-    private String requestValue;
+    private String email;
     private String otp;
 }

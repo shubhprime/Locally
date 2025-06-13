@@ -47,7 +47,10 @@ public class User implements Serializable {
     @Column(nullable = false)
     private String phoneNumber;
     @Column(nullable = true)
-    private String alternativePhoneNumber;
+    private String alternatePhoneNumber;
+
+    @Column(columnDefinition = "TEXT")
+    private String profilePictureBase64;
 
     @Column(nullable = false)
     private String password;
@@ -58,6 +61,12 @@ public class User implements Serializable {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "role_id", nullable = false)
     private Role role;
+
+    @Column(name = "is_deleted")
+    private Boolean isDeleted;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 
     @CreationTimestamp
     private LocalDateTime createdAt;

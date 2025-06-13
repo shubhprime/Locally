@@ -20,6 +20,6 @@ public class UserRequest {
     private String address;
     private String email;
     private String phoneNumber;
-    private String alternativePhoneNumber;
+    private String alternatePhoneNumber;
     private String password;
 }

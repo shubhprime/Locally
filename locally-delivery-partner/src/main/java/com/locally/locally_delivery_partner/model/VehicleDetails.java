@@ -46,6 +46,12 @@ public class VehicleDetails implements Serializable {
     @Builder.Default
     private Boolean isPrimaryVehicle = false;
 
+    @Column(name = "is_deleted")
+    private Boolean isDeleted = false;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
     @CreationTimestamp
     private LocalDateTime createdAt;
     @UpdateTimestamp

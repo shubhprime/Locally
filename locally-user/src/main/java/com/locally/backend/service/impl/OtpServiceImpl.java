@@ -26,7 +26,11 @@ public class OtpServiceImpl implements OtpService {
     @Override
     public boolean validateOtp(String key, String otp) {
         String storedOtp = redisTemplate.opsForValue().get(key);
-        return storedOtp != null && storedOtp.equals(otp);
+        if (storedOtp != null && storedOtp.equals(otp)) {
+            redisTemplate.delete(key);
+            return true;
+        }
+        return false;
     }
 
     @Override

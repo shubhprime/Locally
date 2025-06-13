@@ -1,7 +1,5 @@
 package com.locally.backend.service;
 
-import java.time.Duration;
-
 public interface OtpService {
 
     public void storeOtp(String key, String otp, long expirySeconds);

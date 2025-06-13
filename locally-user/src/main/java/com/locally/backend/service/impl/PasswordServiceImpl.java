@@ -5,7 +5,6 @@ import com.locally.backend.model.User;
 import com.locally.backend.repository.UserRepository;
 import com.locally.backend.service.OtpService;
 import com.locally.backend.service.PasswordService;
-import com.locally.backend.service.UserCacheService;
 import com.locally.backend.utils.AccountUtils;
 import com.locally.backend.utils.JwtUtil;
 import com.locally.backend.utils.OtpUtil;
@@ -43,7 +42,7 @@ public class PasswordServiceImpl implements PasswordService {
             if (("EMAIL").equals(passwordRequest.getRequestMedium())) {
                 String email = passwordRequest.getRequestValue();
                 user = userCacheService.getCachedUserByEmail(email)
-                        .orElseThrow(() -> new RuntimeException("User Not Found. You Need To Sign Up First"));
+                        .orElseThrow(() -> new RuntimeException(AccountUtils.USER_NOT_FOUND));
 
                 if(!user.getIsVerified()) {
                     return AppResponse.builder()
@@ -69,7 +68,7 @@ public class PasswordServiceImpl implements PasswordService {
             if (("PHONE_NUMBER").equals(passwordRequest.getRequestMedium())) {
                 String phoneNumber = passwordRequest.getRequestValue();
                 user = userCacheService.getCachedUserByPhone(phoneNumber)
-                        .orElseThrow(() -> new RuntimeException("User Not Found. You Need To Sign Up First"));
+                        .orElseThrow(() -> new RuntimeException(AccountUtils.USER_NOT_FOUND));
 
                 if(!user.getIsVerified()) {
                     return AppResponse.builder()
@@ -107,17 +106,7 @@ public class PasswordServiceImpl implements PasswordService {
          */
         try {
             String key;
-            if ("EMAIL".equals(otpVerificationRequest.getRequestMedium())) {
-                key = "otp:" + otpVerificationRequest.getRequestValue();
-            } else if ("PHONE_NUMBER".equals(otpVerificationRequest.getRequestMedium())) {
-                key = "otp:" + otpVerificationRequest.getRequestValue();
-            } else {
-                return AppResponse.builder()
-                        .responseCode(AccountUtils.VERIFY_OTP_FAILED_CODE)
-                        .success(AccountUtils.VERIFY_OTP_FAILED_SUCCESS)
-                        .responseMessage(AccountUtils.VERIFY_OTP_FAILED_MESSAGE)
-                        .build();
-            }
+            key = "otp:" + otpVerificationRequest.getEmail();
 
             boolean isValid = otpService.validateOtp(key, otpVerificationRequest.getOtp());
 
@@ -138,7 +127,7 @@ public class PasswordServiceImpl implements PasswordService {
                     .build();
 
         } catch (Exception e) {
-            throw new RuntimeException("Error verifying OTP", e);
+            throw new RuntimeException(AccountUtils.ERROR_VERIFYING_OTP, e);
         }
     }
 
@@ -193,7 +182,7 @@ public class PasswordServiceImpl implements PasswordService {
         try {
             String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
             User user = userRepository.findByEmail(currentUsername)
-                    .orElseThrow(() -> new RuntimeException("User not found"));
+                    .orElseThrow(() -> new RuntimeException(AccountUtils.USER_NOT_FOUND));
 
             if(!user.getIsVerified()) {
                 return AppResponse.builder()

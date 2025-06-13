@@ -67,6 +67,9 @@ public class DeliveryPartner implements Serializable {
     @Column(nullable = false, unique = true)
     private String bankAccountNumber;
 
+    @Column(columnDefinition = "TEXT")
+    private String profilePictureBase64;
+
     @Column(nullable = false)
     private String password;
 
@@ -79,6 +82,12 @@ public class DeliveryPartner implements Serializable {
 
     @Column(nullable = false)
     private Boolean isVerified;
+
+    @Column(name = "is_deleted")
+    private Boolean isDeleted;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 
     @CreationTimestamp
     private LocalDateTime createdAt;

@@ -16,7 +16,7 @@ public class DeliveryPartnerCacheService {
 
     @Cacheable(value = "deliveryPartners", key = "#email")
     public Optional<DeliveryPartner> getCachedDeliveryPartnerByEmail(String email) {
-        return deliveryPartnerRepository.findByEmail(email);
+        return deliveryPartnerRepository.findByEmailAndIsDeletedFalse(email);
     }
 
     @Cacheable(value = "deliveryPartners", key = "#phoneNumber")

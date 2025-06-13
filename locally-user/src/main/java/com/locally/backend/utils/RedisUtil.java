@@ -48,4 +48,16 @@ public class RedisUtil {
             return false; // Default to "not blacklisted" if Redis fails
         }
     }
+
+    public void setWithExpiry(String key, String value, long seconds) {
+        redisTemplate.opsForValue().set(key, value, seconds, TimeUnit.SECONDS);
+    }
+
+    public String get(String key) {
+        return redisTemplate.opsForValue().get(key);
+    }
+
+    public void delete(String key) {
+        redisTemplate.delete(key);
+    }
 }

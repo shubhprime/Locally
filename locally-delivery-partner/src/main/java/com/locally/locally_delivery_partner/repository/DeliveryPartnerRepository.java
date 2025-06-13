@@ -9,4 +9,5 @@ public interface DeliveryPartnerRepository extends JpaRepository<DeliveryPartner
     boolean existsByEmail(String email);
     Optional<DeliveryPartner> findByEmail(String email);
     Optional<DeliveryPartner> findByPhoneNumber(String phoneNumber);
+    Optional<DeliveryPartner> findByEmailAndIsDeletedFalse(String email);
 }

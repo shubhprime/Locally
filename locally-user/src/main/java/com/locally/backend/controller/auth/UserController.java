@@ -1,10 +1,6 @@
 package com.locally.backend.controller.auth;
 
-import com.locally.backend.dto.AppResponse;
-import com.locally.backend.dto.LoginRequest;
-import com.locally.backend.dto.RefreshTokenRequest;
-import com.locally.backend.dto.UserRequest;
-import com.locally.backend.service.LoginService;
+import com.locally.backend.dto.*;
 import com.locally.backend.service.UserService;
 import com.locally.backend.utils.AccountUtils;
 import com.locally.backend.utils.JwtUtil;
@@ -13,8 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Date;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/user/v1/auth")
@@ -23,22 +18,67 @@ public class UserController {
     private UserService userService;
 
     @Autowired
-    private LoginService loginService;
-
-    @Autowired
     private JwtUtil jwtUtil;
 
     @Autowired
     private RedisUtil redisUtil;
 
     @PostMapping("/signup")
-    public AppResponse createUser(@RequestBody UserRequest userRequest) {
-        return userService.createUser(userRequest);
+    public ResponseEntity<AppResponse> createUser(@RequestBody UserRequest userRequest) {
+        AppResponse appResponse = userService.createUser(userRequest);
+
+        if (appResponse.getResponseCode().equals(AccountUtils.ACCOUNT_EXISTS_CODE)) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(appResponse); // 409 Conflict if account exists
+        }
+
+        if (appResponse.isSuccess()) {
+            return ResponseEntity.status(HttpStatus.CREATED).body(appResponse); // 201 Created
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(appResponse); // Generic fallback
+        }
+    }
+
+    @PostMapping("/send-verification-otp")
+    public ResponseEntity<AppResponse> sendVerificationOtp(@RequestBody SendVerificationOtpRequest sendVerificationOtpRequest) {
+        AppResponse response = userService.sendVerificationOtp(sendVerificationOtpRequest);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @PostMapping("/verify-verification-otp")
+    public ResponseEntity<AppResponse> verifyVerificationOtp(@RequestBody OtpVerificationRequest request) {
+        AppResponse appResponse = userService.verifyVerificationOtp(request);
+        return ResponseEntity.status(HttpStatus.OK).body(appResponse);
+    }
+
+    @PostMapping("/upload-profile-picture")
+    public ResponseEntity<AppResponse> uploadProfilePicture(@RequestParam("picture") MultipartFile picture, @RequestHeader("Authorization") String authHeader) {
+
+        String token = authHeader.substring(7);
+        String email = jwtUtil.retrieveSubject(token);
+
+        UploadProfilePictureRequest uploadProfilePictureRequest = new UploadProfilePictureRequest(email, picture);
+
+        AppResponse appResponse = userService.uploadProfilePicture(uploadProfilePictureRequest);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(appResponse);
+    }
+
+    @PatchMapping("/update-profile")
+    public ResponseEntity<AppResponse> updateProfile(@RequestBody UpdateUserRequest updateUserRequest, @RequestHeader("Authorization") String authHeader) {
+
+        String token = authHeader.substring(7);
+        String email = jwtUtil.retrieveSubject(token);
+
+        updateUserRequest.setEmail(email);
+
+        AppResponse appResponse = userService.updateUserProfile(updateUserRequest);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(appResponse);
     }
 
     @PostMapping("/login")
     public ResponseEntity<AppResponse> loginUser(@RequestBody LoginRequest loginRequest) {
-        AppResponse appResponse = loginService.loginUser(loginRequest);
+        AppResponse appResponse = userService.loginUser(loginRequest);
 
         if (appResponse.isSuccess()) {
 
@@ -59,30 +99,29 @@ public class UserController {
 
     @PostMapping("/logout")
     public ResponseEntity<AppResponse> logoutUser(@RequestBody RefreshTokenRequest userRequest) {
-        String refreshToken = userRequest.getRefreshToken();
+        AppResponse appResponse = userService.logoutUser(userRequest);
 
-        if(refreshToken != null && !refreshToken.isEmpty()) {
-            Date expirationDate = new Date(System.currentTimeMillis() + jwtUtil.getRefreshTokenExpirationTimeInMillis());
-
-            redisUtil.blacklistToken(refreshToken, expirationDate);
-
-            return ResponseEntity.ok(AppResponse.builder()
-                    .responseCode(AccountUtils.LOGOUT_USER_CODE)
-                    .success(AccountUtils.LOGOUT_USER_SUCCESS)
-                    .responseMessage(AccountUtils.LOGOUT_USER_MESSAGE)
-                    .accessToken(null)
-                    .refreshToken(null)
-                    .build()
-            );
+        if (appResponse.isSuccess()) {
+            return ResponseEntity.ok(appResponse);
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(appResponse);
         }
+    }
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(AppResponse.builder()
-                .responseCode(AccountUtils.LOGOUT_USER_FAILED_CODE)
-                .success(AccountUtils.LOGOUT_USER_FAILED_SUCCESS)
-                .responseMessage(AccountUtils.LOGOUT_USER_FAILED_MESSAGE)
-                .accessToken(null)
-                .refreshToken(null)
-                .build());
+    @DeleteMapping("/delete-account")
+    public ResponseEntity<AppResponse> deleteUser(@RequestBody DeleteUserRequest deleteUserRequest, @RequestHeader("Authorization") String authHeader) {
+
+        String token = authHeader.substring(7);
+        String email = jwtUtil.retrieveSubject(token);
+
+        deleteUserRequest.setEmail(email);
+
+        AppResponse appResponse = userService.deleteAccount(deleteUserRequest);
+        if (appResponse.isSuccess()) {
+            return ResponseEntity.ok(appResponse);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(appResponse);
+        }
     }
 
     // TODO: Remove this route (ONLY FOR TESTING JWT AUTHORIZATION)
