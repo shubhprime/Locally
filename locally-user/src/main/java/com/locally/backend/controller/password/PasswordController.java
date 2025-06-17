@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("api/user/v1/password")
+@RequestMapping("/api/user/v1/password")
 public class PasswordController {
 
     @Autowired

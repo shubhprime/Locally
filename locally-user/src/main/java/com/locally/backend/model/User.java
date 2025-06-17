@@ -49,6 +49,12 @@ public class User implements Serializable {
     @Column(nullable = true)
     private String alternatePhoneNumber;
 
+    @Column(nullable = false)
+    private double averageRating = 0.0;
+
+    @Column(nullable = false)
+    private int totalRatings = 0;
+
     @Column(columnDefinition = "TEXT")
     private String profilePictureBase64;
 

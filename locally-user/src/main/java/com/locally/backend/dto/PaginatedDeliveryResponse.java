@@ -13,8 +13,8 @@ import java.util.List;
 @Builder
 public class PaginatedDeliveryResponse {
     private List<AllUserDeliveryResponse> deliveries;
-    private int currentPage;
-    private int pageSize;
-    private long totalItems;
-    private int totalPages;
+    private int currentPage = 0;
+    private int pageSize = 5;
+    private long totalItems = 0L;
+    private int totalPages = 0;
 }

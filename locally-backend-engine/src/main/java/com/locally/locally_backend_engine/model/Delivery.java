@@ -36,8 +36,9 @@ public class Delivery {
     @Column(nullable = false)
     private String typeOfDelivery;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String deliveryStatus; // PENDING, ASSIGNED, IN_TRANSIT, DELIVERED, FAILED
+    private DeliveryStatus deliveryStatus; // PENDING, ASSIGNED, IN_TRANSIT, DELIVERED, CANCELLED, FAILED
 
 //    @ManyToOne(fetch = FetchType.LAZY)
 //    @JoinColumn(name = "assigned_delivery_partner_id")
@@ -55,12 +56,32 @@ public class Delivery {
     @Column(nullable = false)
     private double distanceInMiles;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
+    private  int rating;
+
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private boolean userHasRated;
+
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private boolean deliveryPartnerHasRated;
+
+    @Column(nullable = false, columnDefinition = "boolean default false")
     private boolean isPaid;
+
+    @Column(nullable = true)
+    private String cancellationReason;
+
+    @Column(nullable = true)
+    private String failureReason;
 
     @CreationTimestamp
     private LocalDateTime createdAt;
     @UpdateTimestamp
     private LocalDateTime modifiedAt;
+    private LocalDateTime assignedAt;
+    private LocalDateTime inTransitAt;
+    private LocalDateTime deliveredAt;
+    private LocalDateTime paidAt;
     private LocalDateTime cancelledAt;
+    private LocalDateTime failedAt;
 }

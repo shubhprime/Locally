@@ -23,8 +23,10 @@ public class UserDeliveryController {
         String token = authHeader.substring(7);
         String email = jwtUtil.retrieveSubject(token);
 
-        DeliveryResponse response = userDeliveryService.createDelivery(deliveryRequest, email);
-        return ResponseEntity.ok(response);
+        deliveryRequest.setEmail(email);
+
+        DeliveryResponse deliveryResponse = userDeliveryService.createDelivery(deliveryRequest);
+        return ResponseEntity.ok(deliveryResponse);
     }
 
     @GetMapping("/get-all-user-delivery")
@@ -43,8 +45,8 @@ public class UserDeliveryController {
         String token = authHeader.substring(7);
         String email = jwtUtil.retrieveSubject(token);
 
-        UserDeliveryByIdResponse response = userDeliveryService.getDeliveryByIdForUser(email, deliveryId);
-        return ResponseEntity.ok(response);
+        UserDeliveryByIdResponse userDeliveryByIdResponse = userDeliveryService.getDeliveryByIdForUser(email, deliveryId);
+        return ResponseEntity.ok(userDeliveryByIdResponse);
     }
 
     @PutMapping("/update-delivery/{deliveryId}")
@@ -53,8 +55,8 @@ public class UserDeliveryController {
         String token = authHeader.substring(7);
         String email = jwtUtil.retrieveSubject(token);
 
-        DeliveryResponse response = userDeliveryService.updateDelivery(deliveryId, updatedDeliveryRequest, email);
-        return ResponseEntity.ok(response);
+        DeliveryResponse deliveryResponse = userDeliveryService.updateDelivery(deliveryId, updatedDeliveryRequest, email);
+        return ResponseEntity.ok(deliveryResponse);
     }
 
     @PutMapping("/cancel-delivery/{deliveryId}")
@@ -63,7 +65,7 @@ public class UserDeliveryController {
         String token = authHeader.substring(7);
         String email = jwtUtil.retrieveSubject(token);
 
-        DeliveryResponse response = userDeliveryService.cancelDelivery(deliveryId, cancelDeliveryRequest, email);
-        return ResponseEntity.ok(response);
+        DeliveryResponse deliveryResponse = userDeliveryService.cancelDelivery(deliveryId, cancelDeliveryRequest, email);
+        return ResponseEntity.ok(deliveryResponse);
     }
 }

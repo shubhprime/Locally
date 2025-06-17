@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class DeliveryRequest {
     private Long senderId;
+    private String email;
     private String pickUpAddress;
     private String dropOffAddress;
     private String packageDetails;

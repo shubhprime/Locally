@@ -3,7 +3,7 @@ package com.locally.backend.service;
 import com.locally.backend.dto.*;
 
 public interface UserDeliveryService {
-    public DeliveryResponse createDelivery(DeliveryRequest deliveryRequest, String email);
+    public DeliveryResponse createDelivery(DeliveryRequest deliveryRequest);
 
     public PaginatedDeliveryResponse getAllDeliveriesForUser(String email, int page, int size);
 

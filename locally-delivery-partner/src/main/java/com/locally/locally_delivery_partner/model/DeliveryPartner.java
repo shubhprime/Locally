@@ -64,6 +64,12 @@ public class DeliveryPartner implements Serializable {
     @Column(nullable = false, unique = true)
     private String governmentId;
 
+    @Column(nullable = false)
+    private double averageRating = 0.0;
+
+    @Column(nullable = false)
+    private int totalRatings = 0;
+
     @Column(nullable = false, unique = true)
     private String bankAccountNumber;
 

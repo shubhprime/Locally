@@ -35,7 +35,15 @@ public class SecurityConfig {
                         exception.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/user/v1/auth/signup", "/api/user/v1/auth/login", "/api/user/v1/auth/logout", "/api/user/v1/auth/send-verification-otp", "/api/user/v1/auth/verify-verification-otp", "/api/v1/password/forgot-password", "/api/v1/password/verify-otp", "/api/v1/password/reset-password").permitAll()
+                        .requestMatchers("/api/user/v1/auth/signup",
+                                "/api/user/v1/auth/login",
+                                "/api/user/v1/auth/logout",
+                                "/api/user/v1/auth/send-verification-otp",
+                                "/api/user/v1/auth/verify-verification-otp",
+                                "/api/v1/password/forgot-password",
+                                "/api/v1/password/verify-otp",
+                                "/api/v1/password/reset-password")
+                        .permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
