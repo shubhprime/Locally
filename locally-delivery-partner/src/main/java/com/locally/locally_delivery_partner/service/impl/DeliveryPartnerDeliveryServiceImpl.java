@@ -9,10 +9,14 @@ import com.locally.locally_delivery_partner.repository.DeliveryPartnerRepository
 import com.locally.locally_delivery_partner.service.DeliveryPartnerDeliveryService;
 import com.locally.locally_delivery_partner.utils.DeliveryPartnerUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 @Service
 public class DeliveryPartnerDeliveryServiceImpl implements DeliveryPartnerDeliveryService {
+
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
 
     @Autowired
     private DeliveryPartnerRepository deliveryPartnerRepository;
@@ -29,7 +33,17 @@ public class DeliveryPartnerDeliveryServiceImpl implements DeliveryPartnerDelive
         deliveryStatusRequest.setDeliveryPartnerId(deliveryPartner.getId());
 
         try {
-            return deliveryPartnerDeliveryClient.acceptDelivery(deliveryStatusRequest);
+            DeliveryEngineResponse deliveryEngineResponse = deliveryPartnerDeliveryClient.acceptDelivery(deliveryStatusRequest);
+
+            if (Boolean.TRUE.equals(deliveryEngineResponse.isSuccess())) {
+                redisTemplate.opsForValue().set(
+                        "delivery_status:" + deliveryPartner.getId(),
+                        "ON_DELIVERY",
+                        2, java.util.concurrent.TimeUnit.HOURS
+                );
+            }
+
+            return deliveryEngineResponse;
         } catch (feign.FeignException fe) {
             try {
                 String errorBody = fe.contentUTF8() != null ? fe.contentUTF8() : "";
@@ -87,6 +101,8 @@ public class DeliveryPartnerDeliveryServiceImpl implements DeliveryPartnerDelive
         deliveryStatusRequest.setDeliveryPartnerId(deliveryPartner.getId());
 
         try {
+            redisTemplate.delete("delivery_status:" + deliveryPartner.getId());
+
             return deliveryPartnerDeliveryClient.markDeliveryDelivered(deliveryStatusRequest);
         } catch (feign.FeignException fe) {
             try {
@@ -145,6 +161,8 @@ public class DeliveryPartnerDeliveryServiceImpl implements DeliveryPartnerDelive
         deliveryStatusRequest.setDeliveryPartnerId(deliveryPartner.getId());
 
         try {
+            redisTemplate.delete("delivery_status:" + deliveryPartner.getId());
+
             return deliveryPartnerDeliveryClient.cancelDelivery(deliveryStatusRequest);
         } catch (feign.FeignException fe) {
             try {
@@ -174,6 +192,8 @@ public class DeliveryPartnerDeliveryServiceImpl implements DeliveryPartnerDelive
         deliveryStatusRequest.setDeliveryPartnerId(deliveryPartner.getId());
 
         try {
+            redisTemplate.delete("delivery_status:" + deliveryPartner.getId());
+
             return deliveryPartnerDeliveryClient.deliveryFailed(deliveryStatusRequest);
         } catch (feign.FeignException fe) {
             try {

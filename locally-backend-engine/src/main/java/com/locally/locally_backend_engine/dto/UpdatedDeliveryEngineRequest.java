@@ -17,4 +17,6 @@ public class UpdatedDeliveryEngineRequest {
     private String updatedPackageDetails;
     private String updatedTypeOfDelivery;
     private double updatedDistanceInMiles;
+    private double updatedLatitude;
+    private double updatedLongitude;
 }

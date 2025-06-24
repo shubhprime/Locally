@@ -3,8 +3,10 @@
 		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
+	<!-- Basic project metadata -->
 	<modelVersion>4.0.0</modelVersion>
 
+	<!-- Spring Boot Parent -->
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
@@ -12,6 +14,7 @@
 		<relativePath/>
 	</parent>
 
+	<!-- Project coordinates -->
 	<groupId>com.locally</groupId>
 	<artifactId>locally-user</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
@@ -19,11 +22,13 @@
 	<description>Locally User App Backend</description>
 	<packaging>jar</packaging>
 
+	<!-- Java version properties -->
 	<properties>
 		<java.version>17</java.version>
 		<maven.compiler.release>17</maven.compiler.release>
 	</properties>
 
+	<!-- Dependency Management (for Spring Cloud BOM) -->
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
@@ -37,6 +42,7 @@
 	</dependencyManagement>
 
 	<dependencies>
+
 		<!-- Spring Boot Starters -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -56,6 +62,8 @@
 			<scope>runtime</scope>
 			<optional>true</optional>
 		</dependency>
+
+		<!-- Feign Clients -->
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-openfeign</artifactId>
@@ -66,14 +74,14 @@
 			<version>13.2.1</version>
 		</dependency>
 
-		<!-- Postgres -->
+		<!-- Database Driver -->
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
 			<scope>runtime</scope>
 		</dependency>
 
-		<!-- Lombok -->
+		<!-- Lombok (for annotations like @Getter, @Setter, etc.) -->
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
@@ -81,24 +89,26 @@
 			<scope>provided</scope>
 		</dependency>
 
-		<!-- Spring Test -->
+		<!-- Spring Boot Test -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
 
-		<!-- Security + Mail -->
+		<!-- Spring Security -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security</artifactId>
 		</dependency>
+
+		<!-- Email Support -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-mail</artifactId>
 		</dependency>
 
-		<!-- JWT -->
+		<!-- JSON Web Token (JWT) -->
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt-api</artifactId>
@@ -117,11 +127,13 @@
 			<scope>runtime</scope>
 		</dependency>
 
-		<!-- Redis + WebSocket -->
+		<!-- Redis (for caching or pub/sub) -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-redis</artifactId>
 		</dependency>
+
+		<!-- WebSocket Support -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-websocket</artifactId>
@@ -134,10 +146,14 @@
 			<version>24.0.1</version>
 			<scope>compile</scope>
 		</dependency>
+
 	</dependencies>
 
+	<!-- Build plugins -->
 	<build>
 		<plugins>
+
+			<!-- Maven Compiler Plugin -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -154,10 +170,12 @@
 				</configuration>
 			</plugin>
 
+			<!-- Spring Boot Maven Plugin -->
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
+
 		</plugins>
 	</build>
 </project>

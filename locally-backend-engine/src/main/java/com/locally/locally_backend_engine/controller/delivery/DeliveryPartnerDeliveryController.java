@@ -1,4 +1,4 @@
-package com.locally.locally_backend_engine.controller.Delivery;
+package com.locally.locally_backend_engine.controller.delivery;
 
 import com.locally.locally_backend_engine.dto.*;
 import com.locally.locally_backend_engine.service.DeliveryPartnerDeliveryService;

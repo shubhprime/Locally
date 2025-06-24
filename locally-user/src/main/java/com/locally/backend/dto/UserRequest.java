@@ -1,6 +1,5 @@
 package com.locally.backend.dto;
 
-import com.locally.backend.model.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

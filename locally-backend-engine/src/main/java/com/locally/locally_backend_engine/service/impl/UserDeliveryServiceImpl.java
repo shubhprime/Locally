@@ -4,6 +4,7 @@ import com.locally.locally_backend_engine.dto.*;
 import com.locally.locally_backend_engine.model.Delivery;
 import com.locally.locally_backend_engine.model.DeliveryStatus;
 import com.locally.locally_backend_engine.repository.DeliveryRepository;
+import com.locally.locally_backend_engine.service.TrackingService;
 import com.locally.locally_backend_engine.service.UserDeliveryService;
 import com.locally.locally_backend_engine.utils.EngineUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,7 +24,13 @@ import java.util.stream.Collectors;
 public class UserDeliveryServiceImpl implements UserDeliveryService {
 
     @Autowired
+    private TrackingService trackingService;
+
+    @Autowired
     private DeliveryRepository deliveryRepository;
+
+    @Autowired
+    private SimpMessagingTemplate simpMessagingTemplate;
 
     @Transactional
     @Override
@@ -139,6 +147,36 @@ public class UserDeliveryServiceImpl implements UserDeliveryService {
         existingDelivery.setModifiedAt(LocalDateTime.now());
 
         Delivery updatedOrder = deliveryRepository.save(existingDelivery);
+
+        if (DeliveryStatus.PENDING.equals(updatedOrder.getDeliveryStatus())) {
+            TrackingRequest trackingRequest = TrackingRequest.builder()
+                    .deliveryId(updatedOrder.getDeliveryId())
+                    .latitude(updatedDeliveryEngineRequest.getUpdatedLatitude())
+                    .longitude(updatedDeliveryEngineRequest.getUpdatedLongitude())
+                    .build();
+
+            // Call the tracking/assignment service
+            trackingService.assignDelivery(trackingRequest);
+        }
+
+        if (DeliveryStatus.ASSIGNED.equals(updatedOrder.getDeliveryStatus())
+                || DeliveryStatus.IN_TRANSIT.equals(updatedOrder.getDeliveryStatus())) {
+
+            DeliveryUpdateNotification notification = DeliveryUpdateNotification.builder()
+                    .deliveryId(updatedOrder.getDeliveryId())
+                    .updatedPickUpAddress(updatedOrder.getPickUpAddress())
+                    .updatedDropOffAddress(updatedOrder.getDropOffAddress())
+                    .updatedPackageDetails(updatedOrder.getPackageDetails())
+                    .updatedTypeOfDelivery(updatedOrder.getTypeOfDelivery())
+                    .updatedDistanceInMiles(updatedOrder.getDistanceInMiles())
+                    .updatedFee(updatedOrder.getTotalFee())
+                    .build();
+
+            simpMessagingTemplate.convertAndSend(
+                    "/topic/delivery-updates/" + updatedOrder.getAssignedDeliveryPartnerId(),
+                    notification
+            );
+        }
 
         return DeliveryEngineResponse.builder()
                 .responseCode(EngineUtils.UPDATE_DELIVERY_SUCCESS_CODE)

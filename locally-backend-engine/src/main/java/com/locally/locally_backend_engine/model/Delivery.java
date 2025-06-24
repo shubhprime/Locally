@@ -57,7 +57,7 @@ public class Delivery {
     private double distanceInMiles;
 
     @Column(nullable = true)
-    private  int rating;
+    private int rating;
 
     @Column(nullable = false, columnDefinition = "boolean default false")
     private boolean userHasRated;
@@ -78,7 +78,7 @@ public class Delivery {
     private LocalDateTime createdAt;
     @UpdateTimestamp
     private LocalDateTime modifiedAt;
-    private LocalDateTime assignedAt;
+    private LocalDateTime assignedAt; // works as delivery partner accepting time
     private LocalDateTime inTransitAt;
     private LocalDateTime deliveredAt;
     private LocalDateTime paidAt;

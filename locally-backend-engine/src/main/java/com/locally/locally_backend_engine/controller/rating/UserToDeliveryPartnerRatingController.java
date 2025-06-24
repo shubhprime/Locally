@@ -16,6 +16,7 @@ public class UserToDeliveryPartnerRatingController {
 
     @PostMapping("/rate-delivery")
     public ResponseEntity<UserToDeliveryPartnerResponse> rateDelivery(@RequestBody UserToDeliveryPartnerRequest userToDeliveryPartnerRequest, @RequestHeader("Authorization") String authHeader) {
+
         UserToDeliveryPartnerResponse userToDeliveryPartnerResponse = userRatingService.rateDelivery(userToDeliveryPartnerRequest, authHeader);
 
         return ResponseEntity.ok(userToDeliveryPartnerResponse);

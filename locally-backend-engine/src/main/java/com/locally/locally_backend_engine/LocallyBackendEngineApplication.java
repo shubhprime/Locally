@@ -8,7 +8,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 
 @EnableAsync
 @EnableCaching
-@EnableFeignClients(basePackages = "com.locally.locally_backend_engine")
+@EnableFeignClients(basePackages = "com.locally.locally_backend_engine.client")
 @SpringBootApplication
 public class LocallyBackendEngineApplication {
 

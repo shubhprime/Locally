@@ -39,7 +39,9 @@ public class SecurityConfig {
                                 "/api/engine/v1/delivery-partner/delivery/mark-delivery-paid",
                                 "/api/engine/v1/delivery-partner/delivery/cancel-delivery",
                                 "/api/engine/v1/delivery-partner/delivery/delivery-failed",
-                                "/api/engine/v1/delivery-partner/delivery/get-active-delivery/{partnerId}")
+                                "/api/engine/v1/delivery-partner/delivery/get-active-delivery/{partnerId}",
+                                "/api/engine/v1/location/update",
+                                "/api/engine/v1/tracking/assign-delivery")
                         .permitAll()
                         .anyRequest().authenticated()
                 )

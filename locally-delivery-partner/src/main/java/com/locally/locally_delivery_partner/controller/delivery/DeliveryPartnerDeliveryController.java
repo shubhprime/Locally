@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 public class DeliveryPartnerDeliveryController {
 
     @Autowired
-    private DeliveryPartnerDeliveryService deliveryService;
+    private DeliveryPartnerDeliveryService deliveryPartnerDeliveryService;
 
     @Autowired
     private JwtUtil jwtUtil;
@@ -26,7 +26,7 @@ public class DeliveryPartnerDeliveryController {
 
         deliveryStatusRequest.setEmail(email);
 
-        DeliveryEngineResponse deliveryEngineResponse = deliveryService.acceptDelivery(deliveryStatusRequest);
+        DeliveryEngineResponse deliveryEngineResponse = deliveryPartnerDeliveryService.acceptDelivery(deliveryStatusRequest);
         return ResponseEntity.ok(deliveryEngineResponse);
     }
 
@@ -38,7 +38,7 @@ public class DeliveryPartnerDeliveryController {
 
         deliveryStatusRequest.setEmail(email);
 
-        DeliveryEngineResponse deliveryEngineResponse = deliveryService.markDeliveryInTransit(deliveryStatusRequest);
+        DeliveryEngineResponse deliveryEngineResponse = deliveryPartnerDeliveryService.markDeliveryInTransit(deliveryStatusRequest);
         return ResponseEntity.ok(deliveryEngineResponse);
     }
 
@@ -50,7 +50,7 @@ public class DeliveryPartnerDeliveryController {
 
         deliveryStatusRequest.setEmail(email);
 
-        DeliveryEngineResponse deliveryEngineResponse = deliveryService.markDeliveryDelivered(deliveryStatusRequest);
+        DeliveryEngineResponse deliveryEngineResponse = deliveryPartnerDeliveryService.markDeliveryDelivered(deliveryStatusRequest);
         return ResponseEntity.ok(deliveryEngineResponse);
     }
 
@@ -62,7 +62,7 @@ public class DeliveryPartnerDeliveryController {
 
         deliveryStatusRequest.setEmail(email);
 
-        DeliveryEngineResponse deliveryEngineResponse = deliveryService.markDeliveryPaid(deliveryStatusRequest);
+        DeliveryEngineResponse deliveryEngineResponse = deliveryPartnerDeliveryService.markDeliveryPaid(deliveryStatusRequest);
         return ResponseEntity.ok(deliveryEngineResponse);
     }
 
@@ -74,7 +74,7 @@ public class DeliveryPartnerDeliveryController {
 
         deliveryStatusRequest.setEmail(email);
 
-        DeliveryEngineResponse deliveryEngineResponse = deliveryService.cancelDelivery(deliveryStatusRequest);
+        DeliveryEngineResponse deliveryEngineResponse = deliveryPartnerDeliveryService.cancelDelivery(deliveryStatusRequest);
         return ResponseEntity.ok(deliveryEngineResponse);
     }
 
@@ -86,7 +86,7 @@ public class DeliveryPartnerDeliveryController {
 
         deliveryStatusRequest.setEmail(email);
 
-        DeliveryEngineResponse deliveryEngineResponse = deliveryService.deliveryFailed(deliveryStatusRequest);
+        DeliveryEngineResponse deliveryEngineResponse = deliveryPartnerDeliveryService.deliveryFailed(deliveryStatusRequest);
         return ResponseEntity.ok(deliveryEngineResponse);
     }
 
@@ -96,7 +96,7 @@ public class DeliveryPartnerDeliveryController {
         String token = authHeader.substring(7);
         String email = jwtUtil.retrieveSubject(token);
 
-        DeliveryEngineResponse deliveryEngineResponse = deliveryService.getActiveDelivery(deliveryPartnerId, email);
+        DeliveryEngineResponse deliveryEngineResponse = deliveryPartnerDeliveryService.getActiveDelivery(deliveryPartnerId, email);
         return ResponseEntity.ok(deliveryEngineResponse);
     }
 }

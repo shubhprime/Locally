@@ -40,7 +40,11 @@ public class SecurityConfig {
                                 "/api/delivery-partner/v1/auth/verify-verification-otp",
                                 "/api/delivery-partner/v1/auth/login",
                                 "/api/engine/v1/password/forgot-password",
-                                "/api/engine/v1/token/refresh")
+                                "/api/engine/v1/token/refresh",
+                                "/api/delivery-partner/v1/location/update",
+                                "/api/delivery-partner/v1/location/nearest",
+                                "/api/delivery-partner/v1/tracking/send-offer",
+                                "/api/delivery-partner/v1/tracking/check-accepted")
                         .permitAll()
                         .anyRequest().authenticated()
                 )

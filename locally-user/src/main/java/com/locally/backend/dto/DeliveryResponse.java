@@ -13,5 +13,5 @@ public class DeliveryResponse {
     private String responseCode;
     private boolean success;
     private String responseMessage;
-    private long deliveryId;
+    private Long deliveryId;
 }
