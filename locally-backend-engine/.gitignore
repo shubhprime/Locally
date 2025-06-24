@@ -1,5 +1,8 @@
 HELP.md
-locally-backend-engine/target/
+# === Ignore Maven build output ===
+**/target/
+
+# === Allow Maven wrapper JAR (optional) ===
 !locally-backend-engine/.mvn/wrapper/maven-wrapper.jar
 #!**/src/main/**/target/
 #!**/src/test/**/target/

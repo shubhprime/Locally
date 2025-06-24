@@ -1,5 +1,8 @@
 HELP.md
-locally-user/target/
+# === Ignore all Maven target folders ===
+**/target/
+
+# === Allow Maven wrapper JARs (optional, un-ignore specific files) ===
 !locally-user/.mvn/wrapper/maven-wrapper.jar
 #!**/src/main/**/target/
 #!**/src/test/**/target/

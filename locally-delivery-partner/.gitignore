@@ -1,5 +1,8 @@
 HELP.md
-locally-delivery-partner/target/
+# === Ignore build output ===
+**/target/
+
+# === Allow Maven wrapper JAR (optional) ===
 !locally-delivery-partner/.mvn/wrapper/maven-wrapper.jar
 #!**/src/main/**/target/
 #!**/src/test/**/target/
