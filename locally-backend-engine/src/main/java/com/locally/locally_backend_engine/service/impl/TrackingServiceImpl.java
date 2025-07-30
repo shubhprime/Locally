@@ -2,9 +2,12 @@ package com.locally.locally_backend_engine.service.impl;
 
 import com.locally.locally_backend_engine.client.EngineToDeliveryPartner.EngineToDeliveryPartnerClient;
 import com.locally.locally_backend_engine.dto.*;
+import com.locally.locally_backend_engine.model.Delivery;
+import com.locally.locally_backend_engine.repository.DeliveryRepository;
 import com.locally.locally_backend_engine.service.DeliveryAssignmentService;
 import com.locally.locally_backend_engine.service.DeliveryPartnerDeliveryService;
 import com.locally.locally_backend_engine.service.TrackingService;
+import com.locally.locally_backend_engine.service.UserDeliveryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,10 +25,19 @@ public class TrackingServiceImpl implements TrackingService {
     @Autowired
     private DeliveryPartnerDeliveryService deliveryPartnerDeliveryService;
 
+    @Autowired
+    private UserDeliveryService userDeliveryService;
+
+    @Autowired
+    private DeliveryRepository deliveryRepository;
+
     @Override
     public TrackingResponse assignDelivery(TrackingRequest trackingRequest) {
 
         List<NearestDriverResponse> nearbyDriverIds;
+
+        Delivery delivery = deliveryRepository.findById(trackingRequest.getDeliveryId())
+                .orElseThrow(() -> new RuntimeException("Delivery not found"));
 
         // Step 1: Call delivery-partner to get nearby drivers
         try {
@@ -93,7 +105,43 @@ public class TrackingServiceImpl implements TrackingService {
 
                         deliveryPartnerId = acceptedDeliveryPartnerId;
 
-                        // Step 4: Assign delivery
+                        // Step 4: Fetch driver's current location
+                        DriverLocationResponse driverLocation;
+                        try {
+                            driverLocation = engineToDeliveryPartnerClient.getDriverLocation(deliveryPartnerId);
+                        } catch (Exception e) {
+                            return TrackingResponse.builder()
+                                    .responseCode("500")
+                                    .success(false)
+                                    .responseMessage("Driver accepted but location fetch failed: " + e.getMessage())
+                                    .deliveryId(trackingRequest.getDeliveryId())
+                                    .build();
+                        }
+
+                        // Step 5: Calculate travel distance (from driver to pickup)
+                        double travelDistance = calculateDistance(
+                                driverLocation.getLatitude(),
+                                driverLocation.getLongitude(),
+                                trackingRequest.getLatitude(),
+                                trackingRequest.getLongitude(),
+                                delivery.getTypeOfDelivery()
+                        );
+
+                        // Step 6: Calculate travel fare
+                        double transitFare = delivery.getDeliveryFee();
+                        double travelFare = userDeliveryService.calculateFare(travelDistance, delivery.getTypeOfDelivery());
+
+                        double totalFare = transitFare + travelFare;
+
+                        // Step 7: Calculate delivery partner fare share
+                        double deliveryPartnerFare = userDeliveryService.calculateDeliveryPartnerFare(totalFare, delivery.getTypeOfDelivery());
+
+                        // Step 8: Save fare details
+                        delivery.setDeliveryPartnerTravelFee(deliveryPartnerFare);
+                        delivery.setTotalFee(totalFare);
+                        deliveryRepository.save(delivery);
+
+                        // Step 9: Assign delivery
                         try {
                             deliveryAssignmentService.assign(deliveryPartnerId, trackingRequest.getDeliveryId());
 
@@ -130,6 +178,8 @@ public class TrackingServiceImpl implements TrackingService {
                                 .responseMessage("Assigned to driver: " + deliveryPartnerId)
                                 .deliveryId(trackingRequest.getDeliveryId())
                                 .deliveryPartnerId(deliveryPartnerId)
+                                .totalFare(totalFare)
+                                .deliveryPartnerFare(deliveryPartnerFare)
                                 .build();
                     }
                 }

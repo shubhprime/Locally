@@ -27,7 +27,7 @@ public class LocationServiceImpl implements LocationService {
 
     private static final Logger logger = LoggerFactory.getLogger(LocationServiceImpl.class);
 
-
+    @Override
     public UpdateLocationResponse updateDeliveryPartnerLocation(UpdateLocationRequest updateLocationRequest) {
 
         String freshnessKey = "location_last_updated:" + updateLocationRequest.getDeliveryPartnerId();
@@ -49,6 +49,7 @@ public class LocationServiceImpl implements LocationService {
                 .build();
     }
 
+    @Override
     public List<NearestDriverResponse> getNearestDeliveryPartners(NearestDriverRequest nearestDriverRequest) {
 
         logger.info("Searching for delivery partners near ({}, {}) within {} miles. Limit: {}",
@@ -87,5 +88,19 @@ public class LocationServiceImpl implements LocationService {
                 })
                 .collect(Collectors.toList());
 
+    }
+
+    @Override
+    public Point getLastKnownLocation(Long deliveryPartnerId) {
+
+        String redisKey = deliveryPartnerId.toString();
+
+        List<Point> points = geoRedisTemplate.opsForGeo().position(LOCATION_KEY, redisKey);
+
+        if (points == null || points.isEmpty() || points.get(0) == null) {
+            throw new RuntimeException("No location found for deliveryPartnerId: " + deliveryPartnerId);
+        }
+
+        return points.get(0);
     }
 }

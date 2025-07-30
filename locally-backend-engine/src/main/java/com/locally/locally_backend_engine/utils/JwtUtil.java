@@ -1,5 +1,6 @@
 package com.locally.locally_backend_engine.utils;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
@@ -14,10 +15,12 @@ import java.util.Date;
 
 @Component
 public class JwtUtil {
-    private final String jwtIssuer = "locally-engine-app";
+    private final String jwtIssuer = "locally-user-app";
+    private final String serviceJwtIssuer = "locally-user-service";
 
     private final long accessTokenExpirationTime = 1000 * 60 * 15; // 15 minutes
     private final long refreshTokenExpirationTime = 1000L * 60 * 60 * 24 * 30; // 30 days
+    private final long serviceTokenExpirationTime = 1000 * 60 * 5; // 5 min
 
     @Value("${jwt.secret}")
     private String base64Secret;
@@ -61,6 +64,24 @@ public class JwtUtil {
         } catch (ExpiredJwtException ex) {
             // Extract subject even if token is expired
             return ex.getClaims().getSubject();
+        }
+    }
+
+    public Long retrieveUserIdFromServiceToken(String token) {
+        try {
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(key)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+
+            if (!serviceJwtIssuer.equals(claims.getIssuer())) {
+                throw new RuntimeException("Invalid service token issuer");
+            }
+
+            return Long.parseLong(claims.getSubject());
+        } catch (ExpiredJwtException ex) {
+            return Long.parseLong(ex.getClaims().getSubject());
         }
     }
 
@@ -108,5 +129,21 @@ public class JwtUtil {
         return subject.equals(tokenSubject) && !isTokenExpired(token);
     }
 
+    public boolean isServiceTokenValid(String token) {
+        try {
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(key)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
 
+            if (!serviceJwtIssuer.equals(claims.getIssuer())) {
+                return false;
+            }
+
+            return claims.getExpiration().after(new Date());
+        } catch (Exception e) {
+            return false;
+        }
+    }
 }

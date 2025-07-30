@@ -15,4 +15,6 @@ public class TrackingResponse {
     private String responseMessage;
     private Long deliveryId;
     private Long deliveryPartnerId;
+    private double totalFare;
+    private double deliveryPartnerFare;
 }

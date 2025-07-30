@@ -49,14 +49,30 @@ public class User implements Serializable {
     @Column(nullable = true)
     private String alternatePhoneNumber;
 
+    @Column(nullable = true)
+    private String accountHolderName;
+
+    @Column(nullable = true)
+    private String bankName;
+
+    @Column(nullable = true)
+    private String routingNumber;
+
+    @Column(nullable = true)
+    private String bankAccountNumber;
+
+    @Column(nullable = true)
+    private String accountType;
+
+
     @Column(nullable = false)
     private double averageRating = 0.0;
 
     @Column(nullable = false)
     private int totalRatings = 0;
 
-    @Column(columnDefinition = "TEXT")
-    private String profilePictureBase64;
+//    @Column(columnDefinition = "TEXT")
+//    private String profilePictureBase64;
 
     @Column(nullable = false)
     private String password;

@@ -28,7 +28,19 @@ public class Delivery {
     private String pickUpAddress;
 
     @Column(nullable = false)
+    private double pickUpLongitude;
+
+    @Column(nullable = false)
+    private double pickUpLatitude;
+
+    @Column(nullable = false)
     private String dropOffAddress;
+
+    @Column(nullable = false)
+    private double dropOffLongitude;
+
+    @Column(nullable = false)
+    private double dropOffLatitude;
 
     @Column(nullable = false)
     private String packageDetails;
@@ -43,6 +55,12 @@ public class Delivery {
 //    @ManyToOne(fetch = FetchType.LAZY)
 //    @JoinColumn(name = "assigned_delivery_partner_id")
     private Long assignedDeliveryPartnerId;
+
+    @Column
+    private Double assignedDriverLatitude;
+
+    @Column
+    private Double assignedDriverLongitude;
 
     @Column(nullable = false)
     private double deliveryFee;

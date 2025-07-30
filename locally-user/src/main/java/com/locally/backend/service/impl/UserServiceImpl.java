@@ -1,7 +1,7 @@
 package com.locally.backend.service.impl;
 
 import com.locally.backend.dto.*;
-import com.locally.backend.model.Role;
+        import com.locally.backend.model.Role;
 import com.locally.backend.model.User;
 import com.locally.backend.repository.RoleRepository;
 import com.locally.backend.repository.UserRepository;
@@ -46,14 +46,15 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private RedisUtil redisUtil;
 
+    // TODO: Anonymous user
     @Override
-    public AppResponse createUser(UserRequest userRequest) {
+    public AppResponse<Void> createUser(UserRequest userRequest) {
         /**
          * Create a new user and save it into the database
          */
 
         if(userRepository.existsByEmail(userRequest.getEmail())) {
-            return AppResponse.builder()
+            return AppResponse.<Void>builder()
                     .responseCode(AccountUtils.ACCOUNT_EXISTS_CODE)
                     .success(AccountUtils.ACCOUNT_EXISTS_SUCCESS)
                     .responseMessage(AccountUtils.ACCOUNT_EXISTS_MESSAGE)
@@ -77,6 +78,11 @@ public class UserServiceImpl implements UserService {
                 .email(userRequest.getEmail())
                 .phoneNumber(userRequest.getPhoneNumber())
                 .alternatePhoneNumber(userRequest.getAlternatePhoneNumber())
+                .accountHolderName(userRequest.getAccountHolderName())
+                .bankName(userRequest.getBankName())
+                .routingNumber(userRequest.getRoutingNumber())
+                .bankAccountNumber(userRequest.getBankAccountNumber())
+                .accountType(userRequest.getAccountType())
                 .isDeleted(false)
                 .password(passwordEncoder.encode(userRequest.getPassword()))
                 .isVerified(false)
@@ -100,7 +106,7 @@ public class UserServiceImpl implements UserService {
         String accessToken = jwtUtil.generateAccessToken(newUser.getEmail());
         String refreshToken = jwtUtil.generateRefreshToken(newUser.getEmail());
 
-        return AppResponse.builder()
+        return AppResponse.<Void>builder()
                 .responseCode(AccountUtils.ACCOUNT_CREATION_CODE)
                 .success(AccountUtils.ACCOUNT_CREATION_SUCCESS)
                 .responseMessage(AccountUtils.ACCOUNT_CREATION_MESSAGE)
@@ -109,42 +115,42 @@ public class UserServiceImpl implements UserService {
                 .build();
     }
 
+//    @Override
+//    public AppResponse uploadProfilePicture(UploadProfilePictureRequest uploadProfilePictureRequest) {
+//        /**
+//         * Upload user profile picture
+//         */
+//
+//        User user = userRepository.findByEmailAndIsDeletedFalse(uploadProfilePictureRequest.getEmail())
+//                .orElseThrow(() -> new RuntimeException(AccountUtils.USER_NOT_FOUND));
+//
+//        if (uploadProfilePictureRequest.getPicture() == null || uploadProfilePictureRequest.getPicture().isEmpty()) {
+//            throw new RuntimeException(AccountUtils.PICTURE_FILE_NOT_FOUND);
+//        }
+//
+//        if (uploadProfilePictureRequest.getPicture().getSize() > 2 * 1024 * 1024) { // 2 MB
+//            throw new RuntimeException(AccountUtils.PICTURE_FILE_TOO_LARGE);
+//        }
+//
+//        try {
+//            byte[] bytes = uploadProfilePictureRequest.getPicture().getBytes();
+//            String base64Encoded = Base64.getEncoder().encodeToString(bytes);
+//            user.setProfilePictureBase64(base64Encoded);
+//
+//            userRepository.save(user);
+//        } catch (IOException e) {
+//            throw new RuntimeException(AccountUtils.ERROR_READING_FILE);
+//        }
+//
+//        return AppResponse.builder()
+//                .responseCode(AccountUtils.PICTURE_SAVED_CODE)
+//                .success(AccountUtils.PICTURE_SAVED_SUCCESS)
+//                .responseMessage(AccountUtils.PICTURE_SAVED_MESSAGE)
+//                .build();
+//    }
+
     @Override
-    public AppResponse uploadProfilePicture(UploadProfilePictureRequest uploadProfilePictureRequest) {
-        /**
-         * Upload user profile picture
-         */
-
-        User user = userRepository.findByEmailAndIsDeletedFalse(uploadProfilePictureRequest.getEmail())
-                .orElseThrow(() -> new RuntimeException(AccountUtils.USER_NOT_FOUND));
-
-        if (uploadProfilePictureRequest.getPicture() == null || uploadProfilePictureRequest.getPicture().isEmpty()) {
-            throw new RuntimeException(AccountUtils.PICTURE_FILE_NOT_FOUND);
-        }
-
-        if (uploadProfilePictureRequest.getPicture().getSize() > 2 * 1024 * 1024) { // 2 MB
-            throw new RuntimeException(AccountUtils.PICTURE_FILE_TOO_LARGE);
-        }
-
-        try {
-            byte[] bytes = uploadProfilePictureRequest.getPicture().getBytes();
-            String base64Encoded = Base64.getEncoder().encodeToString(bytes);
-            user.setProfilePictureBase64(base64Encoded);
-
-            userRepository.save(user);
-        } catch (IOException e) {
-            throw new RuntimeException(AccountUtils.ERROR_READING_FILE);
-        }
-
-        return AppResponse.builder()
-                .responseCode(AccountUtils.PICTURE_SAVED_CODE)
-                .success(AccountUtils.PICTURE_SAVED_SUCCESS)
-                .responseMessage(AccountUtils.PICTURE_SAVED_MESSAGE)
-                .build();
-    }
-
-    @Override
-    public AppResponse updateUserProfile(UpdateUserRequest updateUserRequest) {
+    public AppResponse<Void> updateUserProfile(UpdateUserRequest updateUserRequest) {
         /**
          * Update user profile
          */
@@ -159,18 +165,25 @@ public class UserServiceImpl implements UserService {
         if (updateUserRequest.getAlternatePhoneNumber() != null) user.setAlternatePhoneNumber(updateUserRequest.getAlternatePhoneNumber());
         if (updateUserRequest.getCountry() != null) user.setCountry(updateUserRequest.getCountry());
         if (updateUserRequest.getState() != null) user.setState(updateUserRequest.getState());
+        if (updateUserRequest.getAccountHolderName() != null) user.setAccountHolderName(updateUserRequest.getAccountHolderName());
+        if (updateUserRequest.getBankName() != null) user.setBankName(updateUserRequest.getBankName());
+        if (updateUserRequest.getRoutingNumber() != null) user.setRoutingNumber(updateUserRequest.getRoutingNumber());
+        if (updateUserRequest.getBankAccountNumber() != null) user.setBankAccountNumber(updateUserRequest.getBankAccountNumber());
+        if (updateUserRequest.getAccountType() != null) user.setAccountType(updateUserRequest.getAccountType());
+
 
         userRepository.save(user);
 
-        return AppResponse.builder()
+        return AppResponse.<Void>builder()
                 .responseCode(AccountUtils.USER_PROFILE_UPDATE_CODE)
                 .success(AccountUtils.USER_PROFILE_UPDATE_SUCCESS)
                 .responseMessage(AccountUtils.USER_PROFILE_UPDATE_MESSAGE)
                 .build();
     }
 
+    // TODO: Implement verification
     @Override
-    public AppResponse loginUser(LoginRequest loginRequest) {
+    public AppResponse<UserData> loginUser(LoginRequest loginRequest) {
         /**
          * Log In the user and generate a JWT token
          */
@@ -181,10 +194,8 @@ public class UserServiceImpl implements UserService {
 
             boolean isPasswordMatch = passwordEncoder.matches(loginRequest.getPassword(), user.getPassword());
 
-            // TODO: Implement verification
-
             if(!user.getIsVerified()) {
-                return AppResponse.builder()
+                return AppResponse.<UserData>builder()
                         .responseCode(AccountUtils.ACCOUNT_IS_VERIFIED_FAILED_CODE)
                         .success(AccountUtils.ACCOUNT_IS_VERIFIED_FAILED_SUCCESS)
                         .responseMessage(AccountUtils.ACCOUNT_IS_VERIFIED_FAILED_MESSAGE)
@@ -192,7 +203,7 @@ public class UserServiceImpl implements UserService {
             }
 
             if(!isPasswordMatch) {
-                return AppResponse.builder()
+                return AppResponse.<UserData>builder()
                         .responseCode(AccountUtils.ACCOUNT_INCORRECT_PASSWORD_CODE)
                         .success(AccountUtils.ACCOUNT_INCORRECT_PASSWORD_SUCCESS)
                         .responseMessage(AccountUtils.ACCOUNT_INCORRECT_PASSWORD_MESSAGE)
@@ -209,12 +220,20 @@ public class UserServiceImpl implements UserService {
             String accessToken = jwtUtil.generateAccessToken(user.getEmail());
             String refreshToken = jwtUtil.generateRefreshToken(user.getEmail());
 
-            return AppResponse.builder()
+            UserData userData = UserData.builder()
+                    .userId(user.getId().toString())
+                    .firstName(user.getFirstName())
+                    .lastName(user.getLastName())
+                    .email(user.getEmail())
+                    .build();
+
+            return AppResponse.<UserData>builder()
                     .responseCode(AccountUtils.ACCOUNT_LOGIN_CODE)
                     .success(AccountUtils.ACCOUNT_LOGIN_SUCCESS)
                     .responseMessage(AccountUtils.ACCOUNT_LOGIN_MESSAGE)
                     .accessToken(accessToken)
                     .refreshToken(refreshToken)
+                    .data(userData)
                     .build();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -222,7 +241,7 @@ public class UserServiceImpl implements UserService {
     };
 
     @Override
-    public AppResponse logoutUser(RefreshTokenRequest logoutRequest) {
+    public AppResponse<Void> logoutUser(RefreshTokenRequest logoutRequest) {
         /**
          * Log Out the user and expire the JWT token
          */
@@ -237,17 +256,18 @@ public class UserServiceImpl implements UserService {
 
                 redisUtil.blacklistToken(refreshToken, expirationDate);
 
-                return AppResponse.builder()
+                return AppResponse.<Void>builder()
                         .responseCode(AccountUtils.LOGOUT_USER_CODE)
                         .success(AccountUtils.LOGOUT_USER_SUCCESS)
                         .responseMessage(AccountUtils.LOGOUT_USER_MESSAGE)
                         .accessToken(null)
                         .refreshToken(null)
+                        .data(null)
                         .build();
             }
         }
 
-        return AppResponse.builder()
+        return AppResponse.<Void>builder()
                 .responseCode(AccountUtils.LOGOUT_USER_FAILED_CODE)
                 .success(AccountUtils.LOGOUT_USER_FAILED_SUCCESS)
                 .responseMessage(AccountUtils.LOGOUT_USER_FAILED_MESSAGE)
@@ -257,7 +277,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public AppResponse deleteAccount(DeleteUserRequest deleteUserRequest) {
+    public AppResponse<Void> deleteAccount(DeleteUserRequest deleteUserRequest) {
         /**
          * Delete user account
          */
@@ -268,7 +288,7 @@ public class UserServiceImpl implements UserService {
         boolean isPasswordMatch = passwordEncoder.matches(deleteUserRequest.getPassword(), user.getPassword());
 
         if (!isPasswordMatch) {
-            return AppResponse.builder()
+            return AppResponse.<Void>builder()
                     .responseCode(AccountUtils.ACCOUNT_INCORRECT_PASSWORD_CODE)
                     .success(AccountUtils.ACCOUNT_INCORRECT_PASSWORD_SUCCESS)
                     .responseMessage(AccountUtils.ACCOUNT_INCORRECT_PASSWORD_MESSAGE)
@@ -280,7 +300,7 @@ public class UserServiceImpl implements UserService {
         user.setDeletedAt(LocalDateTime.now());
         userRepository.save(user);
 
-        return AppResponse.builder()
+        return AppResponse.<Void>builder()
                 .responseCode(AccountUtils.ACCOUNT_SOFT_DELETED_CODE)
                 .success(AccountUtils.ACCOUNT_SOFT_DELETED_SUCCESS)
                 .responseMessage(AccountUtils.ACCOUNT_SOFT_DELETED_MESSAGE)

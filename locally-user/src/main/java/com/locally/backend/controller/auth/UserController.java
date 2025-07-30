@@ -50,18 +50,18 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(appResponse);
     }
 
-    @PostMapping("/upload-profile-picture")
-    public ResponseEntity<AppResponse> uploadProfilePicture(@RequestParam("picture") MultipartFile picture, @RequestHeader("Authorization") String authHeader) {
-
-        String token = authHeader.substring(7);
-        String email = jwtUtil.retrieveSubject(token);
-
-        UploadProfilePictureRequest uploadProfilePictureRequest = new UploadProfilePictureRequest(email, picture);
-
-        AppResponse appResponse = userService.uploadProfilePicture(uploadProfilePictureRequest);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(appResponse);
-    }
+//    @PostMapping("/upload-profile-picture")
+//    public ResponseEntity<AppResponse> uploadProfilePicture(@RequestParam("picture") MultipartFile picture, @RequestHeader("Authorization") String authHeader) {
+//
+//        String token = authHeader.substring(7);
+//        String email = jwtUtil.retrieveSubject(token);
+//
+//        UploadProfilePictureRequest uploadProfilePictureRequest = new UploadProfilePictureRequest(email, picture);
+//
+//        AppResponse appResponse = userService.uploadProfilePicture(uploadProfilePictureRequest);
+//
+//        return ResponseEntity.status(HttpStatus.CREATED).body(appResponse);
+//    }
 
     @PatchMapping("/update-profile")
     public ResponseEntity<AppResponse> updateProfile(@RequestBody UpdateUserRequest updateUserRequest, @RequestHeader("Authorization") String authHeader) {

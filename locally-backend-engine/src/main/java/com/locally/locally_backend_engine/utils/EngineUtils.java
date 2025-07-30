@@ -14,6 +14,7 @@ public class EngineUtils {
     public static final boolean CANCEL_DELIVERY_SUCCESS_SUCCESS = true;
     public static final String CANCEL_DELIVERY_SUCCESS_MESSAGE = "Delivery Cancelled Successfully.";
 
+    public static final String TYPE_OF_DELIVERY_NORMAL = "NORMAL";
     public static final String TYPE_OF_DELIVERY_LARGE_PACKAGE = "LARGE_DELIVERY";
     public static final String TYPE_OF_DELIVERY_FOOD_DELIVERY = "FOOD_DELIVERY";
     public static final String TYPE_OF_DELIVERY_EXPRESS = "EXPRESS";
@@ -22,6 +23,11 @@ public class EngineUtils {
     public static final double RATE_PER_MILE_LARGE_PACKAGE = 4.0;
     public static final double RATE_PER_MILE_FOOD_DELIVERY = 3.5;
     public static final double RATE_PER_MILE_EXPRESS = 5.5;
+
+    public static final double SHARE_FOR_NORMAL = 0.78;
+    public static final double SHARE_FOR_LARGE_PACKAGE = 0.82;
+    public static final double SHARE_FOR_FOOD_DELIVERY = 0.80;
+    public static final double SHARE_FOR_EXPRESS = 0.85;
 
     public static final String DELIVERY_STATUS_PENDING = "PENDING";
     public static final String DELIVERY_STATUS_ASSIGNED = "ASSIGNED";

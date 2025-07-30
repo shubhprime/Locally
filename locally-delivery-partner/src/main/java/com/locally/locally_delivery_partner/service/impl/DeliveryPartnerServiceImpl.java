@@ -56,6 +56,7 @@ public class DeliveryPartnerServiceImpl implements DeliveryPartnerService {
     @Autowired
     private RedisUtil redisUtil;
 
+    // TODO: Anonymous user
     @Override
     public DeliveryPartnerResponse createDeliveryPartner(CreateDeliveryPartnerRequest createDeliveryPartnerRequest) {
         /**

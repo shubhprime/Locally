@@ -1,12 +1,10 @@
 package com.locally.locally_delivery_partner.controller.location;
 
-import com.locally.locally_delivery_partner.dto.NearestDriverRequest;
-import com.locally.locally_delivery_partner.dto.NearestDriverResponse;
-import com.locally.locally_delivery_partner.dto.UpdateLocationRequest;
-import com.locally.locally_delivery_partner.dto.UpdateLocationResponse;
+import com.locally.locally_delivery_partner.dto.*;
 import com.locally.locally_delivery_partner.service.LocationService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.geo.Point;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,5 +31,17 @@ public class LocationController {
         List<NearestDriverResponse> nearestDrivers = locationService.getNearestDeliveryPartners(nearestDriverRequest);
 
         return ResponseEntity.ok(nearestDrivers);
+    }
+
+    @GetMapping("/get-location/{deliveryPartnerId}")
+    public DriverLocationResponse getDriverLocation(@PathVariable Long deliveryPartnerId) {
+
+        Point point = locationService.getLastKnownLocation(deliveryPartnerId);
+
+        return DriverLocationResponse.builder()
+                .longitude(point.getX()) // Point stores as (x=lon, y=lat)
+                .latitude(point.getY())
+                .deliveryPartnerId(deliveryPartnerId)
+                .build();
     }
 }

@@ -12,7 +12,11 @@ import lombok.NoArgsConstructor;
 public class DeliveryUpdateNotification {
     private Long deliveryId;
     private String updatedPickUpAddress;
+    private double pickUpLongitude;
+    private double pickUpLatitude;
     private String updatedDropOffAddress;
+    private double dropOffLongitude;
+    private double dropOffLatitude;
     private String updatedPackageDetails;
     private String updatedTypeOfDelivery;
     private double updatedDistanceInMiles;

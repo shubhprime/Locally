@@ -41,7 +41,11 @@ public class UserDeliveryServiceImpl implements UserDeliveryService {
         Delivery delivery = Delivery.builder()
                 .senderId(deliveryEngineRequest.getSenderId())
                 .pickUpAddress(deliveryEngineRequest.getPickUpAddress())
+                .pickUpLongitude(deliveryEngineRequest.getPickUpLongitude())
+                .pickUpLatitude(deliveryEngineRequest.getPickUpLatitude())
                 .dropOffAddress(deliveryEngineRequest.getDropOffAddress())
+                .dropOffLongitude(deliveryEngineRequest.getDropOffLongitude())
+                .dropOffLatitude(deliveryEngineRequest.getDropOffLatitude())
                 .packageDetails(deliveryEngineRequest.getPackageDetails())
                 .typeOfDelivery(deliveryEngineRequest.getTypeOfDelivery())
                 .deliveryStatus(DeliveryStatus.valueOf(EngineUtils.DELIVERY_STATUS_PENDING))
@@ -137,7 +141,11 @@ public class UserDeliveryServiceImpl implements UserDeliveryService {
         double deliveryFee = calculateFare(updatedDeliveryEngineRequest.getUpdatedDistanceInMiles(), updatedDeliveryEngineRequest.getUpdatedTypeOfDelivery());
 
         existingDelivery.setPickUpAddress(updatedDeliveryEngineRequest.getUpdatedPickUpAddress());
+        existingDelivery.setPickUpLongitude(updatedDeliveryEngineRequest.getPickUpLongitude());
+        existingDelivery.setPickUpLatitude(updatedDeliveryEngineRequest.getPickUpLatitude());
         existingDelivery.setDropOffAddress(updatedDeliveryEngineRequest.getUpdatedDropOffAddress());
+        existingDelivery.setDropOffLongitude(updatedDeliveryEngineRequest.getDropOffLongitude());
+        existingDelivery.setDropOffLatitude(updatedDeliveryEngineRequest.getDropOffLatitude());
         existingDelivery.setPackageDetails(updatedDeliveryEngineRequest.getUpdatedPackageDetails());
         existingDelivery.setTypeOfDelivery(updatedDeliveryEngineRequest.getUpdatedTypeOfDelivery());
         existingDelivery.setDeliveryFee(deliveryFee);
@@ -165,7 +173,11 @@ public class UserDeliveryServiceImpl implements UserDeliveryService {
             DeliveryUpdateNotification notification = DeliveryUpdateNotification.builder()
                     .deliveryId(updatedOrder.getDeliveryId())
                     .updatedPickUpAddress(updatedOrder.getPickUpAddress())
+                    .pickUpLongitude(updatedOrder.getPickUpLongitude())
+                    .pickUpLatitude(updatedOrder.getPickUpLatitude())
                     .updatedDropOffAddress(updatedOrder.getDropOffAddress())
+                    .dropOffLongitude(updatedOrder.getDropOffLongitude())
+                    .dropOffLatitude(updatedOrder.getDropOffLatitude())
                     .updatedPackageDetails(updatedOrder.getPackageDetails())
                     .updatedTypeOfDelivery(updatedOrder.getTypeOfDelivery())
                     .updatedDistanceInMiles(updatedOrder.getDistanceInMiles())
@@ -237,6 +249,7 @@ public class UserDeliveryServiceImpl implements UserDeliveryService {
 //        }
 //    }
 
+    @Override
     public double calculateFare(double distanceInMiles, String typeOfDelivery) {
 
         double ratePerMile;
@@ -255,5 +268,26 @@ public class UserDeliveryServiceImpl implements UserDeliveryService {
         }
 
         return (ratePerMile * distanceInMiles);
+    }
+
+    @Override
+    public double calculateDeliveryPartnerFare(double totalFare, String typeOfDelivery) {
+
+        double shareFactor;
+        switch (typeOfDelivery.toUpperCase()) {
+            case EngineUtils.TYPE_OF_DELIVERY_LARGE_PACKAGE:
+                shareFactor = EngineUtils.SHARE_FOR_LARGE_PACKAGE;
+                break;
+            case EngineUtils.TYPE_OF_DELIVERY_FOOD_DELIVERY:
+                shareFactor = EngineUtils.SHARE_FOR_FOOD_DELIVERY;
+                break;
+            case EngineUtils.TYPE_OF_DELIVERY_EXPRESS:
+                shareFactor = EngineUtils.SHARE_FOR_EXPRESS;
+                break;
+            default:
+                shareFactor = EngineUtils.SHARE_FOR_NORMAL;
+        }
+
+        return (shareFactor * totalFare);
     }
 }

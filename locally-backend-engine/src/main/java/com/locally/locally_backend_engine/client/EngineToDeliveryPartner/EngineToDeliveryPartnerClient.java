@@ -27,4 +27,7 @@ public interface EngineToDeliveryPartnerClient {
     // Fetch nearest drivers
     @PostMapping("/api/delivery-partner/v1/location/nearest")
     List<NearestDriverResponse> getNearestDrivers(@RequestBody NearestDriverRequest nearestDriverRequest);
+
+    @GetMapping("/api/delivery-partner/v1/location/get-location/{deliveryPartnerId}")
+    DriverLocationResponse getDriverLocation(@PathVariable("deliveryPartnerId") Long deliveryPartnerId);
 }

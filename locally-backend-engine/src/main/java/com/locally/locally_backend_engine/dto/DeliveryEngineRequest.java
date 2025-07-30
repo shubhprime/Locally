@@ -12,7 +12,11 @@ import lombok.NoArgsConstructor;
 public class DeliveryEngineRequest {
     private Long senderId;
     private String pickUpAddress;
+    private double pickUpLongitude;
+    private double pickUpLatitude;
     private String dropOffAddress;
+    private double dropOffLongitude;
+    private double dropOffLatitude;
     private String packageDetails;
     private String typeOfDelivery;
     private double distanceInMiles;

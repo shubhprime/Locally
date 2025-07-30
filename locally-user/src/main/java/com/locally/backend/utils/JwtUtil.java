@@ -1,9 +1,9 @@
 package com.locally.backend.utils;
 
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.WeakKeyException;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -15,9 +15,11 @@ import java.util.Date;
 @Component
 public class JwtUtil {
     private final String jwtIssuer = "locally-user-app";
+    private final String serviceJwtIssuer = "locally-user-service";
 
     private final long accessTokenExpirationTime = 1000 * 60 * 15; // 15 minutes
     private final long refreshTokenExpirationTime = 1000L * 60 * 60 * 24 * 30; // 30 days
+    private final long serviceTokenExpirationTime = 1000 * 60 * 5; // 5 minutes
 
     @Value("${jwt.secret}")
     private String base64Secret;
@@ -26,8 +28,12 @@ public class JwtUtil {
 
     @PostConstruct
     public void init() {
-        byte[] keyBytes = Decoders.BASE64.decode(base64Secret);
-        this.key = Keys.hmacShaKeyFor(keyBytes);
+        try {
+            byte[] keyBytes = Decoders.BASE64.decode(base64Secret);
+            this.key = Keys.hmacShaKeyFor(keyBytes);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to initialize JWT key", e);
+        }
     }
 
     public String generateAccessToken(String email) {
@@ -61,12 +67,52 @@ public class JwtUtil {
         } catch (ExpiredJwtException ex) {
             // Extract subject even if token is expired
             return ex.getClaims().getSubject();
+        } catch (UnsupportedJwtException ex) {
+            throw new RuntimeException("Unsupported JWT token", ex);
+        } catch (MalformedJwtException ex) {
+            throw new RuntimeException("Malformed JWT token", ex);
+        } catch (SecurityException ex) {
+            throw new RuntimeException("Invalid JWT signature", ex);
+        } catch (IllegalArgumentException ex) {
+            throw new RuntimeException("JWT token compact of handler are invalid", ex);
+        }
+    }
+
+    public String generateServiceToken(Long userId) {
+        return Jwts.builder()
+                .setSubject(String.valueOf(userId)) // userId in subject
+                .setIssuer(serviceJwtIssuer)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + serviceTokenExpirationTime))
+                .signWith(key)
+                .compact();
+    }
+
+    public Long retrieveUserIdFromServiceToken(String token) {
+        try {
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(key)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+
+            if (!serviceJwtIssuer.equals(claims.getIssuer())) {
+                throw new RuntimeException("Invalid service token issuer");
+            }
+
+            return Long.parseLong(claims.getSubject());
+        } catch (ExpiredJwtException ex) {
+            return Long.parseLong(ex.getClaims().getSubject());
         }
     }
 
     public boolean validateToken(String token, UserDetails userDetails) {
-        String subject = retrieveSubject(token);
-        return (subject.equals(userDetails.getUsername()) && !isTokenExpired(token));
+        try {
+            String subject = retrieveSubject(token);
+            return (subject.equals(userDetails.getUsername()) && !isTokenExpired(token));
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     private boolean isTokenExpired(String token) {

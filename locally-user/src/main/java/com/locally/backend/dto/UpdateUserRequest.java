@@ -19,4 +19,9 @@ public class UpdateUserRequest {
     private String address;
     private String phoneNumber;
     private String alternatePhoneNumber;
+    private String accountHolderName;
+    private String bankName;
+    private String routingNumber;
+    private String bankAccountNumber;
+    private String accountType;
 }

@@ -25,6 +25,19 @@ public class UserDeliveryServiceImpl implements UserDeliveryService {
         User user = userRepository.findByEmail(deliveryRequest.getEmail())
                 .orElseThrow(() -> new RuntimeException(AccountUtils.USER_NOT_FOUND));
 
+        if (user.getAccountHolderName() == null || user.getAccountHolderName().isBlank() ||
+                user.getBankAccountNumber() == null || user.getBankAccountNumber().isBlank() ||
+                user.getBankName() == null || user.getBankName().isBlank() ||
+                user.getRoutingNumber() == null || user.getRoutingNumber().isBlank() ||
+                user.getAccountType() == null || user.getAccountType().isBlank()) {
+
+            return DeliveryResponse.builder()
+                    .success(false)
+                    .responseCode("400")
+                    .responseMessage("Bank details must be completed before creating a delivery.")
+                    .build();
+        }
+
         deliveryRequest.setSenderId(user.getId());
 
         try {

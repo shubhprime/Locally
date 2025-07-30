@@ -7,7 +7,8 @@ import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-@AllArgsConstructor@Builder
+@AllArgsConstructor
+@Builder
 public class TrackingRequest {
     private Long deliveryId;
     private double latitude;

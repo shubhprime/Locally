@@ -1,7 +1,9 @@
 package com.locally.locally_backend_engine.service.impl;
 
+import com.locally.locally_backend_engine.model.Delivery;
 import com.locally.locally_backend_engine.model.DeliveryAssignment;
 import com.locally.locally_backend_engine.repository.DeliveryAssignmentRepository;
+import com.locally.locally_backend_engine.repository.DeliveryRepository;
 import com.locally.locally_backend_engine.service.DeliveryAssignmentService;
 import com.locally.locally_backend_engine.utils.RedisUtil;
 import org.slf4j.Logger;
@@ -18,6 +20,9 @@ public class DeliveryAssignmentServiceImpl implements DeliveryAssignmentService 
     private DeliveryAssignmentRepository deliveryAssignmentRepository;
 
     @Autowired
+    private DeliveryRepository deliveryRepository;
+
+    @Autowired
     private RedisUtil redisUtil;
 
     private static final String ASSIGNMENT_KEY_PREFIX = "delivery_assigned:";
@@ -26,6 +31,9 @@ public class DeliveryAssignmentServiceImpl implements DeliveryAssignmentService 
 
     @Override
     public void assign(Long deliveryPartnerId, Long deliveryId) {
+
+        Delivery delivery = deliveryRepository.findById(deliveryId)
+                .orElseThrow(() -> new RuntimeException("Delivery not found"));
 
         // Prevent duplicate assignment
         deliveryAssignmentRepository.findByDeliveryId(deliveryId).ifPresent(existing -> {
