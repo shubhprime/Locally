@@ -1,9 +1,8 @@
 package com.locally.backend.service.impl;
 
 import com.locally.backend.dto.*;
-        import com.locally.backend.model.Role;
+import com.locally.backend.model.Role;
 import com.locally.backend.model.User;
-import com.locally.backend.repository.RoleRepository;
 import com.locally.backend.repository.UserRepository;
 import com.locally.backend.service.EmailService;
 import com.locally.backend.service.OtpService;
@@ -16,9 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.Base64;
 import java.util.Date;
 import java.util.Optional;
 
@@ -27,9 +24,6 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private UserRepository userRepository;
-
-    @Autowired
-    private RoleRepository roleRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -61,12 +55,7 @@ public class UserServiceImpl implements UserService {
                     .build();
         }
 
-        Optional<Role> roleOptional = roleRepository.findByRoleName("USER");
-        if(roleOptional.isEmpty()) {
-            throw new RuntimeException(AccountUtils.USER_ROLE_NOT_FOUND);
-        }
-
-        Role userRole = roleOptional.get();
+        Role userRole = Role.USER;
 
         User newUser = User.builder()
                 .firstName(userRequest.getFirstName())
@@ -189,8 +178,15 @@ public class UserServiceImpl implements UserService {
          */
 
         try {
-            User user = userRepository.findByEmail(loginRequest.getEmail())
-                    .orElseThrow(() -> new RuntimeException(AccountUtils.USER_NOT_FOUND));
+            User user = userRepository.findByEmail(loginRequest.getEmail()).orElse(null);
+
+            if (user == null) {
+                return AppResponse.<UserData>builder()
+                        .responseCode("400")
+                        .success(false)
+                        .responseMessage(AccountUtils.USER_NOT_FOUND)
+                        .build();
+            }
 
             boolean isPasswordMatch = passwordEncoder.matches(loginRequest.getPassword(), user.getPassword());
 
@@ -308,7 +304,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public AppResponse sendVerificationOtp(SendVerificationOtpRequest sendVerificationOtpRequest) {
+    public AppResponse<Void> sendVerificationOtp(SendVerificationOtpRequest sendVerificationOtpRequest) {
         /**
          * Send a verification OTP to the user's email
          */
@@ -322,7 +318,7 @@ public class UserServiceImpl implements UserService {
         User user = userOptional.get();
 
         if (user.getIsVerified()) {
-            return AppResponse.builder()
+            return AppResponse.<Void>builder()
                     .responseCode(AccountUtils.ACCOUNT_ALREADY_VERIFIED_CODE)
                     .success(AccountUtils.ACCOUNT_ALREADY_VERIFIED_SUCCESS)
                     .responseMessage(AccountUtils.ACCOUNT_ALREADY_VERIFIED_MESSAGE)
@@ -340,7 +336,7 @@ public class UserServiceImpl implements UserService {
 
         System.out.println("Verification OTP for user " + user.getEmail() + ": " + otp);
 
-        return AppResponse.builder()
+        return AppResponse.<Void>builder()
                 .responseCode(AccountUtils.VERIFICATION_OTP_SENT_CODE)
                 .success(AccountUtils.VERIFICATION_OTP_SENT_SUCCESS)
                 .responseMessage(AccountUtils.VERIFICATION_OTP_SENT_MESSAGE)
@@ -348,7 +344,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public AppResponse sendVerificationOtp(String email) {
+    public AppResponse<Void> sendVerificationOtp(String email) {
         Optional<User> userOptional = userRepository.findByEmail(email);
 
         if (userOptional.isEmpty()) {
@@ -358,7 +354,7 @@ public class UserServiceImpl implements UserService {
         User user = userOptional.get();
 
         if (user.getIsVerified()) {
-            return AppResponse.builder()
+            return AppResponse.<Void>builder()
                     .responseCode(AccountUtils.ACCOUNT_ALREADY_VERIFIED_CODE)
                     .success(AccountUtils.ACCOUNT_ALREADY_VERIFIED_SUCCESS)
                     .responseMessage(AccountUtils.ACCOUNT_ALREADY_VERIFIED_MESSAGE)
@@ -371,7 +367,7 @@ public class UserServiceImpl implements UserService {
 
         emailService.sendVerificationOtp(user.getEmail(), otp);
 
-        return AppResponse.builder()
+        return AppResponse.<Void>builder()
                 .responseCode(AccountUtils.VERIFICATION_OTP_SENT_CODE)
                 .success(AccountUtils.VERIFICATION_OTP_SENT_SUCCESS)
                 .responseMessage(AccountUtils.VERIFICATION_OTP_SENT_MESSAGE)
@@ -379,13 +375,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public AppResponse verifyVerificationOtp(OtpVerificationRequest otpVerificationRequest) {
+    public AppResponse<Void> verifyVerificationOtp(OtpVerificationRequest otpVerificationRequest) {
 
         String otpKey = "verification:" + otpVerificationRequest.getEmail();
         boolean isValid = otpService.validateOtp(otpKey, otpVerificationRequest.getOtp());
 
         if (!isValid) {
-            return AppResponse.builder()
+            return AppResponse.<Void>builder()
                     .responseCode(AccountUtils.WRONG_OTP_CODE)
                     .success(AccountUtils.WRONG_OTP_SUCCESS)
                     .responseMessage(AccountUtils.WRONG_OTP_MESSAGE)
@@ -400,7 +396,7 @@ public class UserServiceImpl implements UserService {
 
         redisUtil.delete(otpKey);
 
-        return AppResponse.builder()
+        return AppResponse.<Void>builder()
                 .responseCode(AccountUtils.EMAIL_VERIFICATION_SUCCESS_CODE)
                 .success(AccountUtils.EMAIL_VERIFICATION_SUCCESS_SUCCESS)
                 .responseMessage(AccountUtils.EMAIL_VERIFICATION_SUCCESS_MESSAGE)

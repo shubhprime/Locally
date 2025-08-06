@@ -1,6 +1,6 @@
 package com.locally.locally_delivery_partner.controller.security;
 
-import com.locally.locally_delivery_partner.dto.DeliveryPartnerResponse;
+import com.locally.locally_delivery_partner.dto.AppResponse;
 import com.locally.locally_delivery_partner.dto.RefreshTokenRequest;
 import com.locally.locally_delivery_partner.dto.TokenResponse;
 import com.locally.locally_delivery_partner.utils.DeliveryPartnerUtils;
@@ -32,7 +32,7 @@ public class TokenController {
             // Check if refresh token is blacklisted
             if (redisUtil.isTokenBlacklisted(refreshToken)) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(DeliveryPartnerResponse.builder()
+                        .body(AppResponse.builder()
                                 .responseCode(DeliveryPartnerUtils.REFRESH_TOKEN_BLACKLISTED_CODE)
                                 .success(DeliveryPartnerUtils.REFRESH_TOKEN_BLACKLISTED_SUCCESS)
                                 .responseMessage(DeliveryPartnerUtils.REFRESH_TOKEN_BLACKLISTED_MESSAGE)
@@ -45,7 +45,7 @@ public class TokenController {
             // Check expiration BEFORE parsing the subject
             if (jwtUtil.isRefreshTokenExpired(refreshToken)) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(DeliveryPartnerResponse.builder()
+                        .body(AppResponse.builder()
                                 .responseCode(DeliveryPartnerUtils.REFRESH_TOKEN_EXPIRED_CODE)
                                 .success(DeliveryPartnerUtils.REFRESH_TOKEN_EXPIRED_SUCCESS)
                                 .responseMessage(DeliveryPartnerUtils.REFRESH_TOKEN_EXPIRED_MESSAGE)
@@ -66,7 +66,7 @@ public class TokenController {
             return ResponseEntity.ok(tokenResponse);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(DeliveryPartnerResponse.builder()
+                    .body(AppResponse.builder()
                             .responseCode(DeliveryPartnerUtils.INVALID_REFRESH_TOKEN_CODE)
                             .success(DeliveryPartnerUtils.INVALID_REFRESH_TOKEN_SUCCESS)
                             .responseMessage(DeliveryPartnerUtils.INVALID_REFRESH_TOKEN_MESSAGE)

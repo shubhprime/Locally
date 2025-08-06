@@ -23,7 +23,7 @@ public class VehicleServiceImpl implements VehicleService {
     private VehicleDetailsRepository vehicleDetailsRepository;
 
     @Override
-    public DeliveryPartnerResponse createVehicle(CreateVehicleRequest createVehicleRequest) {
+    public AppResponse<Void> createVehicle(CreateVehicleRequest createVehicleRequest) {
         /**
          * Create a new vehicle and save it into the database
          */
@@ -57,7 +57,7 @@ public class VehicleServiceImpl implements VehicleService {
 
         vehicleDetailsRepository.save(vehicle);
 
-        return DeliveryPartnerResponse.builder()
+        return AppResponse.<Void>builder()
                 .responseCode(DeliveryPartnerUtils.VEHICLE_CREATION_CODE)
                 .success(DeliveryPartnerUtils.VEHICLE_CREATION_SUCCESS)
                 .responseMessage(isPrimary ? DeliveryPartnerUtils.PRIMARY_VEHICLE_CREATION_MESSAGE : DeliveryPartnerUtils.SECONDARY_VEHICLE_CREATION_MESSAGE)
@@ -92,7 +92,7 @@ public class VehicleServiceImpl implements VehicleService {
     }
 
     @Override
-    public DeliveryPartnerResponse updateVehicle(UpdateVehicleRequest updateVehicleRequest) {
+    public AppResponse<Void> updateVehicle(UpdateVehicleRequest updateVehicleRequest) {
         /**
          * Update a vehicle's details
          */
@@ -126,7 +126,7 @@ public class VehicleServiceImpl implements VehicleService {
 
         vehicleDetailsRepository.save(vehicleDetails);
 
-        return DeliveryPartnerResponse.builder()
+        return AppResponse.<Void>builder()
                 .responseCode(DeliveryPartnerUtils.VEHICLE_UPDATE_CODE)
                 .success(DeliveryPartnerUtils.VEHICLE_UPDATE_SUCCESS)
                 .responseMessage(DeliveryPartnerUtils.VEHICLE_UPDATE_MESSAGE)
@@ -134,7 +134,7 @@ public class VehicleServiceImpl implements VehicleService {
     }
 
     @Override
-    public DeliveryPartnerResponse deleteVehicle(Long vehicleId, String email) {
+    public AppResponse<Void> deleteVehicle(Long vehicleId, String email) {
         /**
          * Delete a vehicle
          */
@@ -166,7 +166,7 @@ public class VehicleServiceImpl implements VehicleService {
             }
         }
 
-        return DeliveryPartnerResponse.builder()
+        return AppResponse.<Void>builder()
                 .responseCode("200")
                 .success(true)
                 .responseMessage("Vehicle deleted successfully.")

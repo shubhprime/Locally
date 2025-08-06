@@ -75,4 +75,16 @@ public class GlobalExceptionHandler {
         );
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
     }
+
+    @ExceptionHandler(WalletOperationException.class)
+    public ResponseEntity<ErrorResponse> handleWalletOperationException(WalletOperationException e, HttpServletRequest request) {
+        ErrorResponse error =ErrorResponse.builder()
+                .error("WALLET_OPERATION_FAILED")
+                .message(e.getUserSafeMessage())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .timestamp(LocalDateTime.now())
+                .path(request.getRequestURI())
+                .build();
+        return ResponseEntity.badRequest().body(error);
+    }
 }

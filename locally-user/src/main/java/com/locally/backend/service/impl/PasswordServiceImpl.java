@@ -3,6 +3,7 @@ package com.locally.backend.service.impl;
 import com.locally.backend.dto.*;
 import com.locally.backend.model.User;
 import com.locally.backend.repository.UserRepository;
+import com.locally.backend.service.EmailService;
 import com.locally.backend.service.OtpService;
 import com.locally.backend.service.PasswordService;
 import com.locally.backend.utils.AccountUtils;
@@ -12,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 public class PasswordServiceImpl implements PasswordService {
@@ -24,6 +27,9 @@ public class PasswordServiceImpl implements PasswordService {
 
     @Autowired
     private OtpService otpService;
+
+    @Autowired
+    private EmailService emailService;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -55,6 +61,13 @@ public class PasswordServiceImpl implements PasswordService {
                 String otp = OtpUtil.generateOtp();
                 String key = "otp:" + email;
                 otpService.storeOtp(key, otp, 900);
+
+                // Send OTP via email
+                try {
+                    sendForgotPasswordEmail(email, otp);
+                } catch (Exception e) {
+                    System.err.println("Failed to send OTP email: " + e.getMessage());
+                }
 
                 System.out.println(otp);
 
@@ -219,5 +232,9 @@ public class PasswordServiceImpl implements PasswordService {
         } catch(Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private void sendForgotPasswordEmail(String email, String otp) {
+        emailService.sendForgotPasswordOtp(email, otp);
     }
 }

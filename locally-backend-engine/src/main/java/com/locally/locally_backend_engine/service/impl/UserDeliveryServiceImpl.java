@@ -4,6 +4,7 @@ import com.locally.locally_backend_engine.dto.*;
 import com.locally.locally_backend_engine.model.Delivery;
 import com.locally.locally_backend_engine.model.DeliveryStatus;
 import com.locally.locally_backend_engine.repository.DeliveryRepository;
+import com.locally.locally_backend_engine.service.FeeCalculationService;
 import com.locally.locally_backend_engine.service.TrackingService;
 import com.locally.locally_backend_engine.service.UserDeliveryService;
 import com.locally.locally_backend_engine.utils.EngineUtils;
@@ -24,6 +25,9 @@ import java.util.stream.Collectors;
 public class UserDeliveryServiceImpl implements UserDeliveryService {
 
     @Autowired
+    private FeeCalculationService feeCalculationService;
+
+    @Autowired
     private TrackingService trackingService;
 
     @Autowired
@@ -36,7 +40,7 @@ public class UserDeliveryServiceImpl implements UserDeliveryService {
     @Override
     public DeliveryEngineResponse createDelivery(DeliveryEngineRequest deliveryEngineRequest) {
 
-        double deliveryFee = calculateFare(deliveryEngineRequest.getDistanceInMiles(), deliveryEngineRequest.getTypeOfDelivery());
+        double deliveryFee = feeCalculationService.calculateFare(deliveryEngineRequest.getDistanceInMiles(), deliveryEngineRequest.getTypeOfDelivery());
 
         Delivery delivery = Delivery.builder()
                 .senderId(deliveryEngineRequest.getSenderId())
@@ -138,7 +142,7 @@ public class UserDeliveryServiceImpl implements UserDeliveryService {
             throw new RuntimeException("Delivery cannot be updated once completed or cancelled. Only deliveries with status Pending, Assigned, or In Transit may be updated.");
         }
 
-        double deliveryFee = calculateFare(updatedDeliveryEngineRequest.getUpdatedDistanceInMiles(), updatedDeliveryEngineRequest.getUpdatedTypeOfDelivery());
+        double deliveryFee = feeCalculationService.calculateFare(updatedDeliveryEngineRequest.getUpdatedDistanceInMiles(), updatedDeliveryEngineRequest.getUpdatedTypeOfDelivery());
 
         existingDelivery.setPickUpAddress(updatedDeliveryEngineRequest.getUpdatedPickUpAddress());
         existingDelivery.setPickUpLongitude(updatedDeliveryEngineRequest.getPickUpLongitude());
@@ -248,46 +252,4 @@ public class UserDeliveryServiceImpl implements UserDeliveryService {
 //
 //        }
 //    }
-
-    @Override
-    public double calculateFare(double distanceInMiles, String typeOfDelivery) {
-
-        double ratePerMile;
-        switch (typeOfDelivery.toUpperCase()) {
-            case EngineUtils.TYPE_OF_DELIVERY_LARGE_PACKAGE:
-                ratePerMile = EngineUtils.RATE_PER_MILE_LARGE_PACKAGE;
-                break;
-            case EngineUtils.TYPE_OF_DELIVERY_FOOD_DELIVERY:
-                ratePerMile = EngineUtils.RATE_PER_MILE_FOOD_DELIVERY;
-                break;
-            case EngineUtils.TYPE_OF_DELIVERY_EXPRESS:
-                ratePerMile = EngineUtils.RATE_PER_MILE_EXPRESS;
-                break;
-            default:
-                ratePerMile = EngineUtils.RATE_PER_MILE_NORMAL;
-        }
-
-        return (ratePerMile * distanceInMiles);
-    }
-
-    @Override
-    public double calculateDeliveryPartnerFare(double totalFare, String typeOfDelivery) {
-
-        double shareFactor;
-        switch (typeOfDelivery.toUpperCase()) {
-            case EngineUtils.TYPE_OF_DELIVERY_LARGE_PACKAGE:
-                shareFactor = EngineUtils.SHARE_FOR_LARGE_PACKAGE;
-                break;
-            case EngineUtils.TYPE_OF_DELIVERY_FOOD_DELIVERY:
-                shareFactor = EngineUtils.SHARE_FOR_FOOD_DELIVERY;
-                break;
-            case EngineUtils.TYPE_OF_DELIVERY_EXPRESS:
-                shareFactor = EngineUtils.SHARE_FOR_EXPRESS;
-                break;
-            default:
-                shareFactor = EngineUtils.SHARE_FOR_NORMAL;
-        }
-
-        return (shareFactor * totalFare);
-    }
 }

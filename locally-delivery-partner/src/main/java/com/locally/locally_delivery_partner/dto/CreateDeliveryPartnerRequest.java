@@ -24,6 +24,10 @@ public class CreateDeliveryPartnerRequest {
     private ModeOfDelivery modeOfDelivery;
     private String governmentIdType;
     private String governmentId;
+    private String accountHolderName;
+    private String bankName;
+    private String routingNumber;
     private String bankAccountNumber;
+    private String accountType;
     private String password;
 }

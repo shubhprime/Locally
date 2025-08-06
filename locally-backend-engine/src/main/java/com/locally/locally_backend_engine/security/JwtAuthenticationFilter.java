@@ -14,12 +14,33 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.List;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Autowired
     private JwtUtil jwtUtil;
+
+    private static final List<String> EXCLUDED_PATHS = List.of(
+            "/api/engine/v1/webhook/stripe",
+            "/api/engine/v1/webhook/",
+            "/api/engine/v1/health",
+            "/actuator/"
+    );
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String path = request.getRequestURI();
+        boolean shouldSkip = EXCLUDED_PATHS.stream().anyMatch(path::startsWith);
+
+        // Debug logging
+        if (path.contains("webhook")) {
+            logger.info("JWT Filter - Path: " + path + ", Should Skip: " + shouldSkip);
+        }
+
+        return shouldSkip;
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -33,18 +54,27 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             token = authHeader.substring(7);
-            subject = jwtUtil.retrieveSubject(token);
+            try {
+                subject = jwtUtil.retrieveSubject(token);
+            } catch (Exception e) {
+                // Log token parsing error but continue - Spring Security will handle the unauthorized response
+                logger.debug("Failed to parse JWT token: " + e.getMessage());
+            }
         }
 
         if (subject != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            if (jwtUtil.isTokenValid(token, subject)) {
-                UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(subject, null, Collections.emptyList());
+            try {
+                if (jwtUtil.isTokenValid(token, subject)) {
+                    UsernamePasswordAuthenticationToken authToken =
+                            new UsernamePasswordAuthenticationToken(subject, null, Collections.emptyList());
 
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
+            } catch (Exception e) {
+                // Log validation error but continue
+                logger.debug("JWT token validation failed: " + e.getMessage());
             }
-
         }
 
         filterChain.doFilter(request, response);

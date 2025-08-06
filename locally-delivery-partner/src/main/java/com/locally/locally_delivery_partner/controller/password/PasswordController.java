@@ -16,22 +16,22 @@ public class PasswordController {
     private PasswordService passwordService;
 
     @PostMapping("/forgot-password")
-    public DeliveryPartnerResponse forgotPassword(@RequestBody ForgotPasswordRequest request) {
+    public AppResponse forgotPassword(@RequestBody ForgotPasswordRequest request) {
         return passwordService.forgotPassword(request);
     }
 
     @PostMapping("/verify-otp")
-    public DeliveryPartnerResponse verifyOtp(@RequestBody OtpVerificationRequest request) {
+    public AppResponse verifyOtp(@RequestBody OtpVerificationRequest request) {
         return passwordService.verifyOtp(request);
     }
 
     @PostMapping("/reset-password")
-    public DeliveryPartnerResponse resetPassword(@RequestBody ResetPasswordRequest request) {
+    public AppResponse resetPassword(@RequestBody ResetPasswordRequest request) {
         return passwordService.resetPassword(request);
     }
 
     @PostMapping("/change-password")
-    public DeliveryPartnerResponse changePassword(@RequestBody ChangePasswordRequest request) {
+    public AppResponse changePassword(@RequestBody ChangePasswordRequest request) {
         return passwordService.changePassword(request);
     }
 }

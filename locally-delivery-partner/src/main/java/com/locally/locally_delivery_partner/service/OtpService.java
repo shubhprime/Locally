@@ -2,11 +2,11 @@ package com.locally.locally_delivery_partner.service;
 
 public interface OtpService {
 
-    public void storeOtp(String key, String otp, long expirySeconds);
+    void storeOtp(String key, String otp, long expirySeconds);
 
-    public String getOtp(String key);
+    String getOtp(String key);
 
     boolean validateOtp(String key, String otp);
 
-    public void deleteOtp(String key);
+    void deleteOtp(String key);
 }

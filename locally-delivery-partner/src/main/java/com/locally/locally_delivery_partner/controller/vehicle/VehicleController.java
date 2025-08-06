@@ -21,16 +21,16 @@ public class VehicleController {
     private VehicleService vehicleService;
 
     @PostMapping("/create-vehicle")
-    public ResponseEntity<DeliveryPartnerResponse> createVehicle(@RequestBody CreateVehicleRequest createVehicleRequest, @RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<AppResponse> createVehicle(@RequestBody CreateVehicleRequest createVehicleRequest, @RequestHeader("Authorization") String authHeader) {
 
         String token = authHeader.substring(7);
         String email = jwtUtil.retrieveSubject(token);
 
         createVehicleRequest.setEmail(email);
 
-        DeliveryPartnerResponse deliveryPartnerResponse = vehicleService.createVehicle(createVehicleRequest);
+        AppResponse appResponse = vehicleService.createVehicle(createVehicleRequest);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(deliveryPartnerResponse);
+        return ResponseEntity.status(HttpStatus.CREATED).body(appResponse);
     }
 
     @GetMapping("/show-list")
@@ -47,7 +47,7 @@ public class VehicleController {
     }
 
     @PutMapping("/update-vehicle/{vehicleId}")
-    public ResponseEntity<DeliveryPartnerResponse> updateVehicle(@PathVariable Long vehicleId, @RequestBody UpdateVehicleRequest updateVehicleRequest, @RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<AppResponse> updateVehicle(@PathVariable Long vehicleId, @RequestBody UpdateVehicleRequest updateVehicleRequest, @RequestHeader("Authorization") String authHeader) {
 
         String token = authHeader.substring(7);
         String email = jwtUtil.retrieveSubject(token);
@@ -55,19 +55,19 @@ public class VehicleController {
         updateVehicleRequest.setEmail(email);
         updateVehicleRequest.setVehicleId(vehicleId);
 
-        DeliveryPartnerResponse deliveryPartnerResponse = vehicleService.updateVehicle(updateVehicleRequest);
+        AppResponse appResponse = vehicleService.updateVehicle(updateVehicleRequest);
 
-        return ResponseEntity.status(HttpStatus.OK).body(deliveryPartnerResponse);
+        return ResponseEntity.status(HttpStatus.OK).body(appResponse);
     }
 
     @DeleteMapping("/delete-vehicle/{vehicleId}")
-    public  ResponseEntity<DeliveryPartnerResponse> deleteVehicle(@PathVariable Long vehicleId, @RequestHeader("Authorization") String authHeader) {
+    public  ResponseEntity<AppResponse> deleteVehicle(@PathVariable Long vehicleId, @RequestHeader("Authorization") String authHeader) {
 
         String token = authHeader.substring(7);
         String email = jwtUtil.retrieveSubject(token);
 
-        DeliveryPartnerResponse deliveryPartnerResponse = vehicleService.deleteVehicle(vehicleId, email);
+        AppResponse appResponse = vehicleService.deleteVehicle(vehicleId, email);
 
-        return ResponseEntity.status(HttpStatus.OK).body(deliveryPartnerResponse);
+        return ResponseEntity.status(HttpStatus.OK).body(appResponse);
     }
 }

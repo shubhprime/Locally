@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/engine/v1/websocket")
-public class LocationController {
+public class WebsocketLocationController {
 
     @Autowired
     private LocationBroadcastService locationBroadcastService;

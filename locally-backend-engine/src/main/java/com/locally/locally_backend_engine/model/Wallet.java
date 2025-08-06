@@ -1,5 +1,6 @@
 package com.locally.locally_backend_engine.model;
 
+import com.locally.locally_backend_engine.decoder.ignore404Error.EncryptedStringConverter;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -26,22 +27,27 @@ public class Wallet {
     @Column(name = "user_id", nullable = false, unique = true)
     private Long userId;
 
+    @Builder.Default
     @Column(name = "balance", nullable = false, precision = 19, scale = 2)
     private BigDecimal balance = BigDecimal.ZERO;
 
+    @Builder.Default
     @Column(name = "frozen_balance", nullable = false, precision = 19, scale = 2)
     private BigDecimal frozenBalance = BigDecimal.ZERO;
 
-    @Convert(converter = EncryptedStringConverter.class)
+//    @Convert(converter = EncryptedStringConverter.class)
     @Column(name = "stripe_customer_id")
     private String stripeCustomerId;
 
+    @Builder.Default
     @Column(name = "currency", nullable = false, length = 3)
     private String currency = "USD";
 
+    @Builder.Default
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
 
+    @Builder.Default
     @Column(name = "is_frozen", nullable = false)
     private Boolean isFrozen = false;
 

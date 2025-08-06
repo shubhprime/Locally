@@ -25,24 +25,27 @@ public class WebMvcConfig implements WebMvcConfigurer {
         registry.addInterceptor(securityInterceptor)
                 .addPathPatterns("/api/**")
                 .excludePathPatterns(
-                        "/api/v1/engine/webhook/**",
-                        "/api/v1/engine/health/**"
+                        "/api/engine/v1/webhook/**",
+                        "/api/engine/v1/health/**",
+                        "/actuator/**"
                 );
 
         // Rate limiting interceptor - runs second
         registry.addInterceptor(rateLimitingInterceptor)
                 .addPathPatterns("/api/**")
                 .excludePathPatterns(
-                        "/api/v1/engine/webhook/**",
-                        "/api/v1/engine/health/**"
+                        "/api/engine/v1/webhook/**",
+                        "/api/engine/v1/health/**",
+                        "/actuator/**"
                 );
 
         // Audit interceptor - runs last to capture all processed requests
         registry.addInterceptor(auditInterceptor)
                 .addPathPatterns("/api/**")
                 .excludePathPatterns(
-                        "/api/v1/engine/health/**",
-                        "/api/v1/engine/metrics/**"
+                        "/api/engine/v1/health/**",
+                        "/api/engine/v1/metrics/**",
+                        "/api/engine/v1/webhook/**"
                 );
     }
 }

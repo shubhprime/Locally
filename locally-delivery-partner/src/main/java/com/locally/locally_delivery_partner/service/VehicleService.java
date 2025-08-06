@@ -5,11 +5,11 @@ import com.locally.locally_delivery_partner.dto.*;
 import java.util.List;
 
 public interface VehicleService {
-    public DeliveryPartnerResponse createVehicle(CreateVehicleRequest createVehicleRequest);
+    AppResponse<Void> createVehicle(CreateVehicleRequest createVehicleRequest);
 
-    public List<VehicleResponse> listVehicles(VehicleListRequest vehicleListRequest);
+    List<VehicleResponse> listVehicles(VehicleListRequest vehicleListRequest);
 
-    public DeliveryPartnerResponse updateVehicle(UpdateVehicleRequest updateVehicleRequest);
+    AppResponse<Void> updateVehicle(UpdateVehicleRequest updateVehicleRequest);
 
-    public DeliveryPartnerResponse deleteVehicle(Long vehicleId, String email);
+    AppResponse<Void> deleteVehicle(Long vehicleId, String email);
 }

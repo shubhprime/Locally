@@ -3,11 +3,11 @@ package com.locally.locally_delivery_partner.service;
 import com.locally.locally_delivery_partner.dto.*;
 
 public interface PasswordService {
-    public DeliveryPartnerResponse forgotPassword(ForgotPasswordRequest forgotPasswordRequest);
+    AppResponse forgotPassword(ForgotPasswordRequest forgotPasswordRequest);
 
-    public DeliveryPartnerResponse verifyOtp(OtpVerificationRequest otpVerificationRequest);
+    AppResponse verifyOtp(OtpVerificationRequest otpVerificationRequest);
 
-    public DeliveryPartnerResponse resetPassword(ResetPasswordRequest resetPasswordRequest);
+    AppResponse resetPassword(ResetPasswordRequest resetPasswordRequest);
 
-    public DeliveryPartnerResponse changePassword(ChangePasswordRequest changePasswordRequest);
+    AppResponse changePassword(ChangePasswordRequest changePasswordRequest);
 }

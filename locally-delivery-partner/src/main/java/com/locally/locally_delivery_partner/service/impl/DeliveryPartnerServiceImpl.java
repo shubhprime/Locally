@@ -2,10 +2,9 @@ package com.locally.locally_delivery_partner.service.impl;
 
 import com.locally.locally_delivery_partner.dto.*;
 import com.locally.locally_delivery_partner.model.DeliveryPartner;
-import com.locally.locally_delivery_partner.model.DeliveryPartnerRole;
+import com.locally.locally_delivery_partner.model.Role;
 import com.locally.locally_delivery_partner.model.VehicleDetails;
 import com.locally.locally_delivery_partner.repository.DeliveryPartnerRepository;
-import com.locally.locally_delivery_partner.repository.RoleRepository;
 import com.locally.locally_delivery_partner.repository.VehicleDetailsRepository;
 import com.locally.locally_delivery_partner.service.DeliveryPartnerService;
 import com.locally.locally_delivery_partner.service.DeliveryPartnerStatusService;
@@ -33,9 +32,6 @@ public class DeliveryPartnerServiceImpl implements DeliveryPartnerService {
     private DeliveryPartnerRepository deliveryPartnerRepository;
 
     @Autowired
-    private RoleRepository roleRepository;
-
-    @Autowired
     private DeliveryPartnerStatusService deliveryPartnerStatusService;
 
     @Autowired
@@ -58,25 +54,20 @@ public class DeliveryPartnerServiceImpl implements DeliveryPartnerService {
 
     // TODO: Anonymous user
     @Override
-    public DeliveryPartnerResponse createDeliveryPartner(CreateDeliveryPartnerRequest createDeliveryPartnerRequest) {
+    public AppResponse<Void> createDeliveryPartner(CreateDeliveryPartnerRequest createDeliveryPartnerRequest) {
         /**
          * Create a new user and save it into the database
          */
 
         if (deliveryPartnerRepository.existsByEmail(createDeliveryPartnerRequest.getEmail())) {
-            return DeliveryPartnerResponse.builder()
+            return AppResponse.<Void>builder()
                     .responseCode(DeliveryPartnerUtils.ACCOUNT_EXISTS_CODE)
                     .success(DeliveryPartnerUtils.ACCOUNT_EXISTS_SUCCESS)
                     .responseMessage(DeliveryPartnerUtils.ACCOUNT_EXISTS_MESSAGE)
                     .build();
         }
 
-        Optional<DeliveryPartnerRole> roleOptional = roleRepository.findByRoleName(DeliveryPartnerUtils.DELIVERY_PARTNER_ROLE_NAME);
-        if (roleOptional.isEmpty()) {
-            throw new RuntimeException(DeliveryPartnerUtils.DELIVERY_PARTNER_ROLE_NOT_FOUND);
-        }
-
-        DeliveryPartnerRole userRole = roleOptional.get();
+        Role userRole = Role.DELIVERY_PARTNER;
 
         DeliveryPartner newDeliveryPartner = DeliveryPartner.builder()
                 .firstName(createDeliveryPartnerRequest.getFirstName())
@@ -91,17 +82,19 @@ public class DeliveryPartnerServiceImpl implements DeliveryPartnerService {
                 .modeOfDelivery(createDeliveryPartnerRequest.getModeOfDelivery())
                 .governmentIdType(createDeliveryPartnerRequest.getGovernmentIdType())
                 .governmentId(createDeliveryPartnerRequest.getGovernmentId())
+                .accountHolderName(createDeliveryPartnerRequest.getAccountHolderName())
+                .bankName(createDeliveryPartnerRequest.getBankName())
+                .routingNumber(createDeliveryPartnerRequest.getRoutingNumber())
                 .bankAccountNumber(createDeliveryPartnerRequest.getBankAccountNumber())
+                .accountType(createDeliveryPartnerRequest.getAccountType())
                 .isDeleted(false)
                 .password(passwordEncoder.encode(createDeliveryPartnerRequest.getPassword()))
-                .deliveryPartnerRole(userRole)
+                .role(userRole)
                 .isActive(DeliveryPartnerUtils.DELIVERY_PARTNER_FALSE)
                 .isVerified(DeliveryPartnerUtils.DELIVERY_PARTNER_FALSE)
                 .build();
 
         deliveryPartnerRepository.save(newDeliveryPartner);
-
-
 
         // Send OTP via email
         try {
@@ -118,7 +111,7 @@ public class DeliveryPartnerServiceImpl implements DeliveryPartnerService {
         String accessToken = jwtUtil.generateAccessToken(newDeliveryPartner.getEmail());
         String refreshToken = jwtUtil.generateRefreshToken(newDeliveryPartner.getEmail());
 
-        return DeliveryPartnerResponse.builder()
+        return AppResponse.<Void>builder()
                 .responseCode(DeliveryPartnerUtils.ACCOUNT_CREATION_CODE)
                 .success(DeliveryPartnerUtils.ACCOUNT_CREATION_SUCCESS)
                 .responseMessage(DeliveryPartnerUtils.ACCOUNT_CREATION_MESSAGE)
@@ -128,7 +121,7 @@ public class DeliveryPartnerServiceImpl implements DeliveryPartnerService {
     }
 
     @Override
-    public DeliveryPartnerResponse uploadProfilePicture(UploadProfilePictureRequest uploadProfilePictureRequest) {
+    public AppResponse<Void> uploadProfilePicture(UploadProfilePictureRequest uploadProfilePictureRequest) {
         /**
          * Upload user profile picture
          */
@@ -154,7 +147,7 @@ public class DeliveryPartnerServiceImpl implements DeliveryPartnerService {
             throw new RuntimeException("Error reading file");
         }
 
-        return DeliveryPartnerResponse.builder()
+        return AppResponse.<Void>builder()
                 .success(true)
                 .responseCode("200")
                 .responseMessage("Profile picture saved in DB.")
@@ -162,7 +155,7 @@ public class DeliveryPartnerServiceImpl implements DeliveryPartnerService {
     }
 
     @Override
-    public DeliveryPartnerResponse updateDeliveryPartnerProfile(UpdateDeliveryPartnerRequest updateDeliveryPartnerRequest) {
+    public AppResponse<DeliveryPartnerData> updateDeliveryPartnerProfile(UpdateDeliveryPartnerRequest updateDeliveryPartnerRequest) {
         /**
          * Update user profile
          */
@@ -181,37 +174,52 @@ public class DeliveryPartnerServiceImpl implements DeliveryPartnerService {
 
         deliveryPartnerRepository.save(deliveryPartner);
 
-        return DeliveryPartnerResponse.builder()
+        DeliveryPartnerData data = DeliveryPartnerData.builder()
+                .userId(deliveryPartner.getId().toString())
+                .firstName(deliveryPartner.getFirstName())
+                .lastName(deliveryPartner.getLastName())
+                .email(deliveryPartner.getEmail())
+                .build();
+
+        return AppResponse.<DeliveryPartnerData>builder()
                 .responseCode(DeliveryPartnerUtils.USER_PROFILE_UPDATE_CODE)
                 .success(DeliveryPartnerUtils.USER_PROFILE_UPDATE_SUCCESS)
                 .responseMessage(DeliveryPartnerUtils.USER_PROFILE_UPDATE_MESSAGE)
+                .data(data)
                 .build();
     }
 
     @Override
-    public DeliveryPartnerResponse loginDeliveryPartner(LoginRequest loginRequest) {
+    public AppResponse<DeliveryPartnerData> loginDeliveryPartner(LoginRequest loginRequest) {
         /**
          * Log In the delivery partner and generate a JWT token
          */
 
         try {
-            DeliveryPartner deliveryPartner = deliveryPartnerRepository.findByEmail(loginRequest.getEmail())
-                    .orElseThrow(() -> new RuntimeException(DeliveryPartnerUtils.DELIVERY_PARTNER_NOT_FOUND));
+            DeliveryPartner deliveryPartner = deliveryPartnerRepository.findByEmail(loginRequest.getEmail()).orElse(null);
+
+            if (deliveryPartner == null) {
+                return AppResponse.<DeliveryPartnerData>builder()
+                        .responseCode("400")
+                        .success(false)
+                        .responseMessage(DeliveryPartnerUtils.DELIVERY_PARTNER_NOT_FOUND)
+                        .build();
+            }
 
             boolean isPasswordMatch = passwordEncoder.matches(loginRequest.getPassword(), deliveryPartner.getPassword());
 
             // TODO: Implement verification
 
-//            if(!user.getIsVerified()) {
-//                return AppResponse.builder()
-//                        .responseCode(AccountUtils.ACCOUNT_IS_VERIFIED_FAILED_CODE)
-//                        .success(AccountUtils.ACCOUNT_IS_VERIFIED_FAILED_SUCCESS)
-//                        .responseMessage(AccountUtils.ACCOUNT_IS_VERIFIED_FAILED_MESSAGE)
-//                        .build();
-//            }
+            if(!deliveryPartner.getIsVerified()) {
+                return AppResponse.<DeliveryPartnerData>builder()
+                        .responseCode(DeliveryPartnerUtils.ACCOUNT_IS_VERIFIED_FAILED_CODE)
+                        .success(DeliveryPartnerUtils.ACCOUNT_IS_VERIFIED_FAILED_SUCCESS)
+                        .responseMessage(DeliveryPartnerUtils.ACCOUNT_IS_VERIFIED_FAILED_MESSAGE)
+                        .build();
+            }
 
             if (!isPasswordMatch) {
-                return DeliveryPartnerResponse.builder()
+                return AppResponse.<DeliveryPartnerData>builder()
                         .responseCode(DeliveryPartnerUtils.ACCOUNT_INCORRECT_PASSWORD_CODE)
                         .success(DeliveryPartnerUtils.ACCOUNT_INCORRECT_PASSWORD_SUCCESS)
                         .responseMessage(DeliveryPartnerUtils.ACCOUNT_INCORRECT_PASSWORD_MESSAGE)
@@ -232,12 +240,20 @@ public class DeliveryPartnerServiceImpl implements DeliveryPartnerService {
             // Mark the user as AVAILABLE upon login
             deliveryPartnerStatusService.markAvailable(deliveryPartner.getEmail());
 
-            return DeliveryPartnerResponse.builder()
+            DeliveryPartnerData data = DeliveryPartnerData.builder()
+                    .userId(deliveryPartner.getId().toString())
+                    .firstName(deliveryPartner.getFirstName())
+                    .lastName(deliveryPartner.getLastName())
+                    .email(deliveryPartner.getEmail())
+                    .build();
+
+            return AppResponse.<DeliveryPartnerData>builder()
                     .responseCode(DeliveryPartnerUtils.ACCOUNT_LOGIN_CODE)
                     .success(DeliveryPartnerUtils.ACCOUNT_LOGIN_SUCCESS)
                     .responseMessage(DeliveryPartnerUtils.ACCOUNT_LOGIN_MESSAGE)
                     .accessToken(accessToken)
                     .refreshToken(refreshToken)
+                    .data(data)
                     .build();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -245,7 +261,7 @@ public class DeliveryPartnerServiceImpl implements DeliveryPartnerService {
     }
 
     @Override
-    public DeliveryPartnerResponse logoutDeliveryPartner(RefreshTokenRequest logoutRequest) {
+    public AppResponse<Void> logoutDeliveryPartner(RefreshTokenRequest logoutRequest) {
         /**
          * Log Out the delivery partner and expire the JWT token
          */
@@ -265,14 +281,14 @@ public class DeliveryPartnerServiceImpl implements DeliveryPartnerService {
                     String email = jwtUtil.retrieveSubject(refreshToken);
                     deliveryPartnerStatusService.markUnavailable(email);
                 } catch (Exception e) {
-                    return DeliveryPartnerResponse.builder()
+                    return AppResponse.<Void>builder()
                             .responseCode(DeliveryPartnerUtils.LOGOUT_USER_FAILED_CODE)
                             .success(DeliveryPartnerUtils.LOGOUT_USER_FAILED_SUCCESS)
                             .responseMessage("Logout failed: invalid token")
                             .build();
                 }
 
-                return DeliveryPartnerResponse.builder()
+                return AppResponse.<Void>builder()
                         .responseCode(DeliveryPartnerUtils.LOGOUT_USER_CODE)
                         .success(DeliveryPartnerUtils.LOGOUT_USER_SUCCESS)
                         .responseMessage(DeliveryPartnerUtils.LOGOUT_USER_MESSAGE)
@@ -282,7 +298,7 @@ public class DeliveryPartnerServiceImpl implements DeliveryPartnerService {
             }
         }
 
-        return DeliveryPartnerResponse.builder()
+        return AppResponse.<Void>builder()
                 .responseCode(DeliveryPartnerUtils.LOGOUT_USER_FAILED_CODE)
                 .success(DeliveryPartnerUtils.LOGOUT_USER_FAILED_SUCCESS)
                 .responseMessage(DeliveryPartnerUtils.LOGOUT_USER_FAILED_MESSAGE)
@@ -292,7 +308,7 @@ public class DeliveryPartnerServiceImpl implements DeliveryPartnerService {
     }
 
     @Override
-    public DeliveryPartnerResponse deleteAccount(DeleteDeliveryPartnerRequest deleteDeliveryPartnerRequest) {
+    public AppResponse<Void> deleteAccount(DeleteDeliveryPartnerRequest deleteDeliveryPartnerRequest) {
         /**
          * Delete user account
          */
@@ -303,7 +319,7 @@ public class DeliveryPartnerServiceImpl implements DeliveryPartnerService {
         boolean isPasswordMatch = passwordEncoder.matches(deleteDeliveryPartnerRequest.getPassword(), deliveryPartner.getPassword());
 
         if (!isPasswordMatch) {
-            return DeliveryPartnerResponse.builder()
+            return AppResponse.<Void>builder()
                     .responseCode(DeliveryPartnerUtils.ACCOUNT_INCORRECT_PASSWORD_CODE)
                     .success(DeliveryPartnerUtils.ACCOUNT_INCORRECT_PASSWORD_SUCCESS)
                     .responseMessage(DeliveryPartnerUtils.ACCOUNT_INCORRECT_PASSWORD_MESSAGE)
@@ -323,7 +339,7 @@ public class DeliveryPartnerServiceImpl implements DeliveryPartnerService {
         deliveryPartner.setDeletedAt(LocalDateTime.now());
         deliveryPartnerRepository.save(deliveryPartner);
 
-        return DeliveryPartnerResponse.builder()
+        return AppResponse.<Void>builder()
                 .success(true)
                 .responseCode("200")
                 .responseMessage("Account soft deleted successfully.")
@@ -331,7 +347,7 @@ public class DeliveryPartnerServiceImpl implements DeliveryPartnerService {
     }
 
     @Override
-    public DeliveryPartnerResponse sendVerificationOtp(SendVerificationOtpRequest sendVerificationOtpRequest) {
+    public AppResponse<Void> sendVerificationOtp(SendVerificationOtpRequest sendVerificationOtpRequest) {
         /**
          * Send a verification OTP to the user's email
          */
@@ -345,7 +361,7 @@ public class DeliveryPartnerServiceImpl implements DeliveryPartnerService {
         DeliveryPartner deliveryPartner = userOptional.get();
 
         if (deliveryPartner.getIsVerified()) {
-            return DeliveryPartnerResponse.builder()
+            return AppResponse.<Void>builder()
                     .responseCode(DeliveryPartnerUtils.ACCOUNT_ALREADY_VERIFIED_CODE)
                     .success(DeliveryPartnerUtils.ACCOUNT_ALREADY_VERIFIED_SUCCESS)
                     .responseMessage(DeliveryPartnerUtils.ACCOUNT_ALREADY_VERIFIED_MESSAGE)
@@ -363,7 +379,7 @@ public class DeliveryPartnerServiceImpl implements DeliveryPartnerService {
 
         System.out.println("Verification OTP for user " + deliveryPartner.getEmail() + ": " + otp);
 
-        return DeliveryPartnerResponse.builder()
+        return AppResponse.<Void>builder()
                 .responseCode(DeliveryPartnerUtils.VERIFICATION_OTP_SENT_CODE)
                 .success(DeliveryPartnerUtils.VERIFICATION_OTP_SENT_SUCCESS)
                 .responseMessage(DeliveryPartnerUtils.VERIFICATION_OTP_SENT_MESSAGE)
@@ -371,7 +387,7 @@ public class DeliveryPartnerServiceImpl implements DeliveryPartnerService {
     }
 
     @Override
-    public DeliveryPartnerResponse sendVerificationOtp(String email) {
+    public AppResponse<Void> sendVerificationOtp(String email) {
         Optional<DeliveryPartner> userOptional = deliveryPartnerRepository.findByEmail(email);
 
         if (userOptional.isEmpty()) {
@@ -381,7 +397,7 @@ public class DeliveryPartnerServiceImpl implements DeliveryPartnerService {
         DeliveryPartner deliveryPartner = userOptional.get();
 
         if (deliveryPartner.getIsVerified()) {
-            return DeliveryPartnerResponse.builder()
+            return AppResponse.<Void>builder()
                     .responseCode(DeliveryPartnerUtils.ACCOUNT_ALREADY_VERIFIED_CODE)
                     .success(DeliveryPartnerUtils.ACCOUNT_ALREADY_VERIFIED_SUCCESS)
                     .responseMessage(DeliveryPartnerUtils.ACCOUNT_ALREADY_VERIFIED_MESSAGE)
@@ -394,7 +410,7 @@ public class DeliveryPartnerServiceImpl implements DeliveryPartnerService {
 
         emailService.sendVerificationOtp(deliveryPartner.getEmail(), otp);
 
-        return DeliveryPartnerResponse.builder()
+        return AppResponse.<Void>builder()
                 .responseCode(DeliveryPartnerUtils.VERIFICATION_OTP_SENT_CODE)
                 .success(DeliveryPartnerUtils.VERIFICATION_OTP_SENT_SUCCESS)
                 .responseMessage(DeliveryPartnerUtils.VERIFICATION_OTP_SENT_MESSAGE)
@@ -402,13 +418,13 @@ public class DeliveryPartnerServiceImpl implements DeliveryPartnerService {
     }
 
     @Override
-    public DeliveryPartnerResponse verifyVerificationOtp(OtpVerificationRequest otpVerificationRequest) {
+    public AppResponse<Void> verifyVerificationOtp(OtpVerificationRequest otpVerificationRequest) {
 
         String otpKey = "verification:" + otpVerificationRequest.getEmail();
         boolean isValid = otpService.validateOtp(otpKey, otpVerificationRequest.getOtp());
 
         if (!isValid) {
-            return DeliveryPartnerResponse.builder()
+            return AppResponse.<Void>builder()
                     .responseCode("400")
                     .success(false)
                     .responseMessage("Invalid or expired OTP")
@@ -423,7 +439,7 @@ public class DeliveryPartnerServiceImpl implements DeliveryPartnerService {
 
         redisUtil.delete(otpKey);
 
-        return DeliveryPartnerResponse.builder()
+        return AppResponse.<Void>builder()
                 .responseCode("200")
                 .success(true)
                 .responseMessage("Email verified successfully")

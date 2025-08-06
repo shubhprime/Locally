@@ -9,10 +9,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class DeliveryPartnerResponse {
+public class AppResponse<T> {
     private String responseCode;
     private boolean success;
     private String responseMessage;
     private String accessToken;
     private String refreshToken;
+    private T data;
 }

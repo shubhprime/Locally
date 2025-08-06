@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@FeignClient(name = "delivery-partner-delivery-service", url = "${delivery.partner.delivery.service.url}")
+@FeignClient(name = "delivery-partner-delivery-service", url = "${engine.service.url}")
 public interface DeliveryPartnerDeliveryClient {
 
     @PostMapping("/api/engine/v1/delivery-partner/delivery/accept-delivery")

@@ -45,7 +45,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
             Pageable pageable
     );
 
-    @Query("SELECT t FROM Transaction t WHERE t.userId = :userId AND t.type = :type ORDER BY t.createdAt DESC")
+    @Query("SELECT t FROM Transaction t WHERE t.userId = :userId AND t.transactionType = :type ORDER BY t.createdAt DESC")
     Page<Transaction> findByUserIdAndType(@Param("userId") Long userId,
                                           @Param("type") TransactionType type,
                                           Pageable pageable);

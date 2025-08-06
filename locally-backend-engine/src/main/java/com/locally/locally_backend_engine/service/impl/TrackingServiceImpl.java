@@ -4,10 +4,7 @@ import com.locally.locally_backend_engine.client.EngineToDeliveryPartner.EngineT
 import com.locally.locally_backend_engine.dto.*;
 import com.locally.locally_backend_engine.model.Delivery;
 import com.locally.locally_backend_engine.repository.DeliveryRepository;
-import com.locally.locally_backend_engine.service.DeliveryAssignmentService;
-import com.locally.locally_backend_engine.service.DeliveryPartnerDeliveryService;
-import com.locally.locally_backend_engine.service.TrackingService;
-import com.locally.locally_backend_engine.service.UserDeliveryService;
+import com.locally.locally_backend_engine.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -26,7 +23,7 @@ public class TrackingServiceImpl implements TrackingService {
     private DeliveryPartnerDeliveryService deliveryPartnerDeliveryService;
 
     @Autowired
-    private UserDeliveryService userDeliveryService;
+    private FeeCalculationService feeCalculationService;
 
     @Autowired
     private DeliveryRepository deliveryRepository;
@@ -129,12 +126,12 @@ public class TrackingServiceImpl implements TrackingService {
 
                         // Step 6: Calculate travel fare
                         double transitFare = delivery.getDeliveryFee();
-                        double travelFare = userDeliveryService.calculateFare(travelDistance, delivery.getTypeOfDelivery());
+                        double travelFare = feeCalculationService.calculateFare(travelDistance, delivery.getTypeOfDelivery());
 
                         double totalFare = transitFare + travelFare;
 
                         // Step 7: Calculate delivery partner fare share
-                        double deliveryPartnerFare = userDeliveryService.calculateDeliveryPartnerFare(totalFare, delivery.getTypeOfDelivery());
+                        double deliveryPartnerFare = feeCalculationService.calculateDeliveryPartnerFare(totalFare, delivery.getTypeOfDelivery());
 
                         // Step 8: Save fare details
                         delivery.setDeliveryPartnerTravelFee(deliveryPartnerFare);
@@ -205,5 +202,22 @@ public class TrackingServiceImpl implements TrackingService {
                 .responseMessage("No driver accepted the delivery")
                 .deliveryId(trackingRequest.getDeliveryId())
                 .build();
+    }
+
+    private double calculateDistance(double lat1, double lon1, double lat2, double lon2, String typeOfDelivery) {
+        final int EARTH_RADIUS_MILES = 3959; // Radius of the earth in miles
+
+        // Convert degrees to radians
+        double latDistance = Math.toRadians(lat2 - lat1);
+        double lonDistance = Math.toRadians(lon2 - lon1);
+
+        // Haversine formula
+        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
+
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+        return EARTH_RADIUS_MILES * c; // result in miles
     }
 }

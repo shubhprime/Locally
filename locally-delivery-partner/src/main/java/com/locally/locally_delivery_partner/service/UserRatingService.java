@@ -4,5 +4,5 @@ import com.locally.locally_delivery_partner.dto.DeliveryPartnerToUserRatingReque
 import com.locally.locally_delivery_partner.dto.DeliveryPartnerToUserResponse;
 
 public interface UserRatingService {
-    public DeliveryPartnerToUserResponse addRating(DeliveryPartnerToUserRatingRequest deliveryPartnerToUserRatingRequest, String authHeader);
+    DeliveryPartnerToUserResponse addRating(DeliveryPartnerToUserRatingRequest deliveryPartnerToUserRatingRequest, String authHeader);
 }

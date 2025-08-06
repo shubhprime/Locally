@@ -14,8 +14,4 @@ public interface UserDeliveryService {
     DeliveryEngineResponse cancelDelivery(CancelDeliveryEngineRequest cancelDeliveryEngineRequest);
 
 //    public DeliveryStatusUpdateResponse updateDeliveryStatus(String email, Long id, String newDeliveryStatus);
-
-    double calculateFare(double distanceInMiles, String typeOfDelivery);
-
-    double calculateDeliveryPartnerFare(double totalFare, String typeOfDelivery);
 }

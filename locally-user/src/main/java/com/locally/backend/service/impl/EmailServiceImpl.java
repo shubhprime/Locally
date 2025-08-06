@@ -39,6 +39,19 @@ public class EmailServiceImpl implements EmailService {
         sendEmail(to, subject, content);
     }
 
+    @Override
+    public void sendForgotPasswordOtp(String to, String otp) {
+        String subject = "Reset Your Password - Locally";
+        String content = "<p>Dear user,</p>"
+                + "<p>You requested to reset your password. Your OTP is:</p>"
+                + "<h2>" + otp + "</h2>"
+                + "<p>This OTP will expire in 15 minutes.</p>"
+                + "<p>If you did not request this, please contact support immediately.</p>"
+                + "<br><p>Thanks,<br>Locally Team</p>";
+
+        sendEmail(to, subject, content);
+    }
+
     private void sendEmail(String to, String subject, String content) {
         try {
             MimeMessage message = mailSender.createMimeMessage();

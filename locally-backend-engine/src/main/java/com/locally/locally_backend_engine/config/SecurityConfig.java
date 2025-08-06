@@ -41,7 +41,8 @@ public class SecurityConfig {
                                 "/api/engine/v1/delivery-partner/delivery/delivery-failed",
                                 "/api/engine/v1/delivery-partner/delivery/get-active-delivery/{partnerId}",
                                 "/api/engine/v1/location/update",
-                                "/api/engine/v1/tracking/assign-delivery")
+                                "/api/engine/v1/tracking/assign-delivery",
+                                "/api/engine/v1/webhook/stripe")
                         .permitAll()
                         .anyRequest().authenticated()
                 )

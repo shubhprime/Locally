@@ -3,21 +3,21 @@ package com.locally.locally_delivery_partner.service;
 import com.locally.locally_delivery_partner.dto.*;
 
 public interface DeliveryPartnerService {
-    public DeliveryPartnerResponse createDeliveryPartner(CreateDeliveryPartnerRequest createDeliveryPartnerRequest);
+    AppResponse<Void> createDeliveryPartner(CreateDeliveryPartnerRequest createDeliveryPartnerRequest);
 
-    public DeliveryPartnerResponse uploadProfilePicture(UploadProfilePictureRequest uploadProfilePictureRequest);
+    AppResponse<Void> uploadProfilePicture(UploadProfilePictureRequest uploadProfilePictureRequest);
 
-    public DeliveryPartnerResponse updateDeliveryPartnerProfile(UpdateDeliveryPartnerRequest updateDeliveryPartnerRequest);
+    AppResponse<DeliveryPartnerData> updateDeliveryPartnerProfile(UpdateDeliveryPartnerRequest updateDeliveryPartnerRequest);
 
-    public DeliveryPartnerResponse loginDeliveryPartner(LoginRequest loginRequest);
+    AppResponse<DeliveryPartnerData> loginDeliveryPartner(LoginRequest loginRequest);
 
-    public DeliveryPartnerResponse logoutDeliveryPartner(RefreshTokenRequest logoutRequest);
+    AppResponse<Void> logoutDeliveryPartner(RefreshTokenRequest logoutRequest);
 
-    public DeliveryPartnerResponse deleteAccount(DeleteDeliveryPartnerRequest deleteDeliveryPartnerRequest);
+    AppResponse<Void> deleteAccount(DeleteDeliveryPartnerRequest deleteDeliveryPartnerRequest);
 
-    public DeliveryPartnerResponse sendVerificationOtp(SendVerificationOtpRequest sendVerificationOtpRequest);
+    AppResponse<Void> sendVerificationOtp(SendVerificationOtpRequest sendVerificationOtpRequest);
 
-    public DeliveryPartnerResponse sendVerificationOtp(String email);
+    AppResponse<Void> sendVerificationOtp(String email);
 
-    public DeliveryPartnerResponse verifyVerificationOtp(OtpVerificationRequest otpVerificationRequest);
+    AppResponse<Void> verifyVerificationOtp(OtpVerificationRequest otpVerificationRequest);
 }

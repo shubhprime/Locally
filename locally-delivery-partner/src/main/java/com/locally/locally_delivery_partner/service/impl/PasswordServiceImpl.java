@@ -32,7 +32,7 @@ public class PasswordServiceImpl implements PasswordService {
     private DeliveryPartnerCacheService deliveryPartnerCacheService;
 
     @Override
-    public DeliveryPartnerResponse forgotPassword(ForgotPasswordRequest forgotPasswordRequest) {
+    public AppResponse<Void> forgotPassword(ForgotPasswordRequest forgotPasswordRequest) {
         /**
          * Send an OTP to the user via email or sms to make a new password
          */
@@ -45,7 +45,7 @@ public class PasswordServiceImpl implements PasswordService {
                         .orElseThrow(() -> new RuntimeException("User Not Found. You Need To Sign Up First"));
 
                 if(!deliveryPartner.getIsVerified()) {
-                    return DeliveryPartnerResponse.builder()
+                    return AppResponse.<Void>builder()
                             .responseCode(DeliveryPartnerUtils.ACCOUNT_IS_VERIFIED_FAILED_CODE)
                             .success(DeliveryPartnerUtils.ACCOUNT_IS_VERIFIED_FAILED_SUCCESS)
                             .responseMessage(DeliveryPartnerUtils.ACCOUNT_IS_VERIFIED_FAILED_MESSAGE)
@@ -58,7 +58,7 @@ public class PasswordServiceImpl implements PasswordService {
 
                 System.out.println(otp);
 
-                return DeliveryPartnerResponse.builder()
+                return AppResponse.<Void>builder()
                         .responseCode(DeliveryPartnerUtils.FORGOT_PASSWORD_EMAIL_CODE)
                         .success(DeliveryPartnerUtils.FORGOT_PASSWORD_EMAIL_SUCCESS)
                         .responseMessage(DeliveryPartnerUtils.FORGOT_PASSWORD_EMAIL_MESSAGE)
@@ -71,7 +71,7 @@ public class PasswordServiceImpl implements PasswordService {
                         .orElseThrow(() -> new RuntimeException("User Not Found. You Need To Sign Up First"));
 
                 if(!deliveryPartner.getIsVerified()) {
-                    return DeliveryPartnerResponse.builder()
+                    return AppResponse.<Void>builder()
                             .responseCode(DeliveryPartnerUtils.ACCOUNT_IS_VERIFIED_FAILED_CODE)
                             .success(DeliveryPartnerUtils.ACCOUNT_IS_VERIFIED_FAILED_SUCCESS)
                             .responseMessage(DeliveryPartnerUtils.ACCOUNT_IS_VERIFIED_FAILED_MESSAGE)
@@ -82,14 +82,14 @@ public class PasswordServiceImpl implements PasswordService {
                 String key = "otp:" + phoneNumber;
                 otpService.storeOtp(key, otp, 900);
 
-                return DeliveryPartnerResponse.builder()
+                return AppResponse.<Void>builder()
                         .responseCode(DeliveryPartnerUtils.FORGOT_PASSWORD_PHONE_NUMBER_CODE)
                         .success(DeliveryPartnerUtils.FORGOT_PASSWORD_PHONE_NUMBER_SUCCESS)
                         .responseMessage(DeliveryPartnerUtils.FORGOT_PASSWORD_PHONE_NUMBER_MESSAGE)
                         .build();
             }
 
-            return DeliveryPartnerResponse.builder()
+            return AppResponse.<Void>builder()
                     .responseCode(DeliveryPartnerUtils.FORGOT_PASSWORD_FAILED_CODE)
                     .success(DeliveryPartnerUtils.FORGOT_PASSWORD_FAILED_SUCCESS)
                     .responseMessage(DeliveryPartnerUtils.FORGOT_PASSWORD_FAILED_MESSAGE)
@@ -100,7 +100,7 @@ public class PasswordServiceImpl implements PasswordService {
     }
 
     @Override
-    public DeliveryPartnerResponse verifyOtp(OtpVerificationRequest otpVerificationRequest) {
+    public AppResponse<Void> verifyOtp(OtpVerificationRequest otpVerificationRequest) {
         /**
          * Verifies the otp entered by the user
          */
@@ -111,7 +111,7 @@ public class PasswordServiceImpl implements PasswordService {
             boolean isValid = otpService.validateOtp(key, otpVerificationRequest.getOtp());
 
             if (!isValid) {
-                return DeliveryPartnerResponse.builder()
+                return AppResponse.<Void>builder()
                         .responseCode(DeliveryPartnerUtils.WRONG_OTP_CODE)
                         .success(DeliveryPartnerUtils.WRONG_OTP_SUCCESS)
                         .responseMessage(DeliveryPartnerUtils.WRONG_OTP_MESSAGE)
@@ -120,7 +120,7 @@ public class PasswordServiceImpl implements PasswordService {
 
             otpService.deleteOtp(key);
 
-            return DeliveryPartnerResponse.builder()
+            return AppResponse.<Void>builder()
                     .responseCode(DeliveryPartnerUtils.FORGOT_PASSWORD_SUCCESS_CODE)
                     .success(DeliveryPartnerUtils.FORGOT_PASSWORD_SUCCESS_SUCCESS)
                     .responseMessage(DeliveryPartnerUtils.FORGOT_PASSWORD_SUCCESS_MESSAGE)
@@ -132,7 +132,7 @@ public class PasswordServiceImpl implements PasswordService {
     }
 
     @Override
-    public DeliveryPartnerResponse resetPassword(ResetPasswordRequest resetPasswordRequest) {
+    public AppResponse<Void> resetPassword(ResetPasswordRequest resetPasswordRequest) {
         /**
          * Verifies the otp entered by the user
          */
@@ -145,7 +145,7 @@ public class PasswordServiceImpl implements PasswordService {
                 deliveryPartner = deliveryPartnerRepository.findByPhoneNumber(resetPasswordRequest.getRequestValue())
                         .orElseThrow(() -> new RuntimeException("User not found"));
             } else {
-                return DeliveryPartnerResponse.builder()
+                return AppResponse.<Void>builder()
                         .responseCode(DeliveryPartnerUtils.RESET_PASSWORD_FAILED_CODE)
                         .success(DeliveryPartnerUtils.RESET_PASSWORD_FAILED_SUCCESS)
                         .responseMessage(DeliveryPartnerUtils.RESET_PASSWORD_FAILED_MESSAGE)
@@ -153,7 +153,7 @@ public class PasswordServiceImpl implements PasswordService {
             }
 
             if(!deliveryPartner.getIsVerified()) {
-                return DeliveryPartnerResponse.builder()
+                return AppResponse.<Void>builder()
                         .responseCode(DeliveryPartnerUtils.ACCOUNT_IS_VERIFIED_FAILED_CODE)
                         .success(DeliveryPartnerUtils.ACCOUNT_IS_VERIFIED_FAILED_SUCCESS)
                         .responseMessage(DeliveryPartnerUtils.ACCOUNT_IS_VERIFIED_FAILED_MESSAGE)
@@ -164,7 +164,7 @@ public class PasswordServiceImpl implements PasswordService {
             deliveryPartner.setPassword(passwordEncoder.encode(resetPasswordRequest.getNewPassword()));
             deliveryPartnerRepository.save(deliveryPartner);
 
-            return DeliveryPartnerResponse.builder()
+            return AppResponse.<Void>builder()
                     .responseCode(DeliveryPartnerUtils.RESET_PASSWORD_SUCCESS_CODE)
                     .success(DeliveryPartnerUtils.RESET_PASSWORD_SUCCESS_SUCCESS)
                     .responseMessage(DeliveryPartnerUtils.RESET_PASSWORD_SUCCESS_MESSAGE)
@@ -175,7 +175,7 @@ public class PasswordServiceImpl implements PasswordService {
     }
 
     @Override
-    public DeliveryPartnerResponse changePassword(ChangePasswordRequest changePasswordRequest) {
+    public AppResponse<Void> changePassword(ChangePasswordRequest changePasswordRequest) {
         /**
          * Validates old password with the entered password and
          */
@@ -185,7 +185,7 @@ public class PasswordServiceImpl implements PasswordService {
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
             if(!deliveryPartner.getIsVerified()) {
-                return DeliveryPartnerResponse.builder()
+                return AppResponse.<Void>builder()
                         .responseCode(DeliveryPartnerUtils.ACCOUNT_IS_VERIFIED_FAILED_CODE)
                         .success(DeliveryPartnerUtils.ACCOUNT_IS_VERIFIED_FAILED_SUCCESS)
                         .responseMessage(DeliveryPartnerUtils.ACCOUNT_IS_VERIFIED_FAILED_MESSAGE)
@@ -194,7 +194,7 @@ public class PasswordServiceImpl implements PasswordService {
 
             // Validate old password
             if (!passwordEncoder.matches(changePasswordRequest.getOldPassword(), deliveryPartner.getPassword())) {
-                return DeliveryPartnerResponse.builder()
+                return AppResponse.<Void>builder()
                         .responseCode(DeliveryPartnerUtils.CHANGE_PASSWORD_FAILED_CODE)
                         .success(DeliveryPartnerUtils.CHANGE_PASSWORD_FAILED_SUCCESS)
                         .responseMessage(DeliveryPartnerUtils.CHANGE_PASSWORD_FAILED_MESSAGE)
@@ -209,7 +209,7 @@ public class PasswordServiceImpl implements PasswordService {
             String newAccessToken = jwtUtil.generateAccessToken(deliveryPartner.getEmail());
             String newRefreshToken = jwtUtil.generateRefreshToken(deliveryPartner.getEmail());
 
-            return DeliveryPartnerResponse.builder()
+            return AppResponse.<Void>builder()
                     .responseCode(DeliveryPartnerUtils.CHANGE_PASSWORD_SUCCESS_CODE)
                     .success(DeliveryPartnerUtils.CHANGE_PASSWORD_SUCCESS_SUCCESS)
                     .responseMessage(DeliveryPartnerUtils.CHANGE_PASSWORD_SUCCESS_MESSAGE)

@@ -64,7 +64,6 @@ public class User implements Serializable {
     @Column(nullable = true)
     private String accountType;
 
-
     @Column(nullable = false)
     private double averageRating = 0.0;
 
@@ -80,8 +79,8 @@ public class User implements Serializable {
     @Column(nullable = false)
     private Boolean isVerified;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "role_id", nullable = false)
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false)
     private Role role;
 
     @Column(name = "is_deleted")

@@ -20,7 +20,7 @@ public class AddressController {
     @Autowired
     private JwtUtil jwtUtil;
 
-    @PostMapping
+    @PostMapping("/create")
     public ResponseEntity<AppResponse> createAddress(@RequestBody AddressRequest addressRequest, @RequestHeader("Authorization") String authHeader) {
 
         String token = authHeader.substring(7);
@@ -35,7 +35,7 @@ public class AddressController {
         }
     }
 
-    @GetMapping
+    @GetMapping("/get-addresses")
     public ResponseEntity<AddressListResponse> getUserAddresses(@RequestHeader("Authorization") String authHeader) {
 
         String token = authHeader.substring(7);

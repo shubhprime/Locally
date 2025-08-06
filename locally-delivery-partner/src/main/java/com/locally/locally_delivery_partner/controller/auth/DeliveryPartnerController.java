@@ -21,93 +21,93 @@ public class DeliveryPartnerController {
     private DeliveryPartnerService deliveryPartnerService;
 
     @PostMapping("/signup")
-    public ResponseEntity<DeliveryPartnerResponse> createUser(@RequestBody CreateDeliveryPartnerRequest createDeliveryPartnerRequest) {
-        DeliveryPartnerResponse deliveryPartnerResponse = deliveryPartnerService.createDeliveryPartner(createDeliveryPartnerRequest);
+    public ResponseEntity<AppResponse> createUser(@RequestBody CreateDeliveryPartnerRequest createDeliveryPartnerRequest) {
+        AppResponse appResponse = deliveryPartnerService.createDeliveryPartner(createDeliveryPartnerRequest);
 
-        if (deliveryPartnerResponse.getResponseCode().equals(DeliveryPartnerUtils.ACCOUNT_EXISTS_CODE)) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(deliveryPartnerResponse); // 409 Conflict if account exists
+        if (appResponse.getResponseCode().equals(DeliveryPartnerUtils.ACCOUNT_EXISTS_CODE)) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(appResponse); // 409 Conflict if account exists
         }
 
-        if (deliveryPartnerResponse.isSuccess()) {
-            return ResponseEntity.status(HttpStatus.CREATED).body(deliveryPartnerResponse); // 201 Created
+        if (appResponse.isSuccess()) {
+            return ResponseEntity.status(HttpStatus.CREATED).body(appResponse); // 201 Created
         } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(deliveryPartnerResponse); // Generic fallback
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(appResponse); // Generic fallback
         }
     }
 
     @PostMapping("/send-verification-otp")
-    public ResponseEntity<DeliveryPartnerResponse> sendVerificationOtp(@RequestBody SendVerificationOtpRequest sendVerificationOtpRequest) {
-        DeliveryPartnerResponse response = deliveryPartnerService.sendVerificationOtp(sendVerificationOtpRequest);
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+    public ResponseEntity<AppResponse> sendVerificationOtp(@RequestBody SendVerificationOtpRequest sendVerificationOtpRequest) {
+        AppResponse appResponse = deliveryPartnerService.sendVerificationOtp(sendVerificationOtpRequest);
+        return ResponseEntity.status(HttpStatus.OK).body(appResponse);
     }
 
     @PostMapping("/verify-verification-otp")
-    public ResponseEntity<DeliveryPartnerResponse> verifyVerificationOtp(@RequestBody OtpVerificationRequest request) {
-        DeliveryPartnerResponse appResponse = deliveryPartnerService.verifyVerificationOtp(request);
+    public ResponseEntity<AppResponse> verifyVerificationOtp(@RequestBody OtpVerificationRequest request) {
+        AppResponse appResponse = deliveryPartnerService.verifyVerificationOtp(request);
         return ResponseEntity.status(HttpStatus.OK).body(appResponse);
     }
 
     @PostMapping("/upload-profile-picture")
-    public ResponseEntity<DeliveryPartnerResponse> uploadProfilePicture(@RequestParam("picture") MultipartFile picture, @RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<AppResponse> uploadProfilePicture(@RequestParam("picture") MultipartFile picture, @RequestHeader("Authorization") String authHeader) {
 
         String token = authHeader.substring(7);
         String email = jwtUtil.retrieveSubject(token);
 
         UploadProfilePictureRequest uploadProfilePictureRequest = new UploadProfilePictureRequest(email, picture);
 
-        DeliveryPartnerResponse deliveryPartnerResponse = deliveryPartnerService.uploadProfilePicture(uploadProfilePictureRequest);
+        AppResponse appResponse = deliveryPartnerService.uploadProfilePicture(uploadProfilePictureRequest);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(deliveryPartnerResponse);
+        return ResponseEntity.status(HttpStatus.CREATED).body(appResponse);
     }
 
     @PatchMapping("/update-profile")
-    public ResponseEntity<DeliveryPartnerResponse> updateProfile(@RequestBody UpdateDeliveryPartnerRequest updateDeliveryPartnerRequest, @RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<AppResponse> updateProfile(@RequestBody UpdateDeliveryPartnerRequest updateDeliveryPartnerRequest, @RequestHeader("Authorization") String authHeader) {
 
         String token = authHeader.substring(7);
         String email = jwtUtil.retrieveSubject(token);
 
         updateDeliveryPartnerRequest.setEmail(email);
 
-        DeliveryPartnerResponse deliveryPartnerResponse = deliveryPartnerService.updateDeliveryPartnerProfile(updateDeliveryPartnerRequest);
+        AppResponse appResponse = deliveryPartnerService.updateDeliveryPartnerProfile(updateDeliveryPartnerRequest);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(deliveryPartnerResponse);
+        return ResponseEntity.status(HttpStatus.CREATED).body(appResponse);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<DeliveryPartnerResponse> loginUser(@RequestBody LoginRequest loginRequest) {
-        DeliveryPartnerResponse deliveryPartnerResponse = deliveryPartnerService.loginDeliveryPartner(loginRequest);
+    public ResponseEntity<AppResponse> loginUser(@RequestBody LoginRequest loginRequest) {
+        AppResponse appResponse = deliveryPartnerService.loginDeliveryPartner(loginRequest);
 
-        if (deliveryPartnerResponse.isSuccess()) {
-            return ResponseEntity.ok(deliveryPartnerResponse);
+        if (appResponse.isSuccess()) {
+            return ResponseEntity.ok(appResponse);
         } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(deliveryPartnerResponse);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(appResponse);
         }
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<DeliveryPartnerResponse> logoutUser(@RequestBody RefreshTokenRequest userRequest) {
-        DeliveryPartnerResponse deliveryPartnerResponse = deliveryPartnerService.logoutDeliveryPartner(userRequest);
+    public ResponseEntity<AppResponse> logoutUser(@RequestBody RefreshTokenRequest userRequest) {
+        AppResponse appResponse = deliveryPartnerService.logoutDeliveryPartner(userRequest);
 
-        if (deliveryPartnerResponse.isSuccess()) {
-            return ResponseEntity.ok(deliveryPartnerResponse);
+        if (appResponse.isSuccess()) {
+            return ResponseEntity.ok(appResponse);
         } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(deliveryPartnerResponse);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(appResponse);
         }
     }
 
     @DeleteMapping("/delete-account")
-    public ResponseEntity<DeliveryPartnerResponse> deleteDeliveryPartner(@RequestBody DeleteDeliveryPartnerRequest deleteDeliveryPartnerRequest, @RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<AppResponse> deleteDeliveryPartner(@RequestBody DeleteDeliveryPartnerRequest deleteDeliveryPartnerRequest, @RequestHeader("Authorization") String authHeader) {
 
         String token = authHeader.substring(7);
         String email = jwtUtil.retrieveSubject(token);
 
         deleteDeliveryPartnerRequest.setEmail(email);
 
-        DeliveryPartnerResponse deliveryPartnerResponse = deliveryPartnerService.deleteAccount(deleteDeliveryPartnerRequest);
-        if (deliveryPartnerResponse.isSuccess()) {
-            return ResponseEntity.ok(deliveryPartnerResponse);
+        AppResponse appResponse = deliveryPartnerService.deleteAccount(deleteDeliveryPartnerRequest);
+        if (appResponse.isSuccess()) {
+            return ResponseEntity.ok(appResponse);
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(deliveryPartnerResponse);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(appResponse);
         }
     }
 

@@ -51,6 +51,21 @@ public class DeliveryPartner implements Serializable {
     @Column(nullable = true)
     private String alternatePhoneNumber;
 
+    @Column(nullable = true)
+    private String accountHolderName;
+
+    @Column(nullable = true)
+    private String bankName;
+
+    @Column(nullable = true)
+    private String routingNumber;
+
+    @Column(nullable = true, unique = true)
+    private String bankAccountNumber;
+
+    @Column(nullable = true)
+    private String accountType;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "mode_of_delivery", nullable = false)
     private ModeOfDelivery modeOfDelivery;
@@ -70,18 +85,15 @@ public class DeliveryPartner implements Serializable {
     @Column(nullable = false)
     private int totalRatings = 0;
 
-    @Column(nullable = false, unique = true)
-    private String bankAccountNumber;
-
     @Column(columnDefinition = "TEXT")
     private String profilePictureBase64;
 
     @Column(nullable = false)
     private String password;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "role_id", nullable = false)
-    private DeliveryPartnerRole deliveryPartnerRole;
+    @Enumerated(EnumType.STRING)
+    @JoinColumn(name = "role", nullable = false)
+    private Role role;
 
     @Column(nullable = false)
     private Boolean isActive;

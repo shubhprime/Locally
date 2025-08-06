@@ -6,7 +6,6 @@ import io.github.bucket4j.Refill;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -18,11 +17,9 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 public class RateLimitingInterceptor implements HandlerInterceptor {
 
-    @Autowired
-    private ConcurrentHashMap<String, Bucket> cache = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, Bucket> cache = new ConcurrentHashMap<>();
 
-    @Autowired
-    private ConcurrentHashMap<String, Long> lastAccessTime = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, Long> lastAccessTime = new ConcurrentHashMap<>();
 
     @Value("${app.rate-limit.requests-per-minute:100}")
     private int requestsPerMinute;

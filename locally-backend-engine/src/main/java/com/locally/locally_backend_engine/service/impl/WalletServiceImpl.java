@@ -6,6 +6,7 @@ import com.locally.locally_backend_engine.dto.*;
 import com.locally.locally_backend_engine.exception.DuplicateTransactionException;
 import com.locally.locally_backend_engine.exception.InsufficientBalanceException;
 import com.locally.locally_backend_engine.exception.WalletNotFoundException;
+import com.locally.locally_backend_engine.exception.WalletOperationException;
 import com.locally.locally_backend_engine.model.Transaction;
 import com.locally.locally_backend_engine.model.TransactionStatus;
 import com.locally.locally_backend_engine.model.TransactionType;
@@ -99,7 +100,11 @@ public class WalletServiceImpl implements WalletService {
 
         } catch (StripeException e) {
             log.error("Error creating Stripe customer for user {}: {}", userId, e.getMessage());
-            throw new RuntimeException("Failed to create wallet", e);
+            throw new WalletOperationException(
+                    "Unable to create wallet. Please try again.",
+                    "Failed to create Stripe customer for user " + userId,
+                    e
+            );
         }
     }
 
@@ -204,7 +209,11 @@ public class WalletServiceImpl implements WalletService {
 
         } catch (StripeException e) {
             log.error("Error processing add money for user {}: {}", addMoneyRequest.getUserId(), e.getMessage(), e);
-            throw new RuntimeException("Failed to initiate payment", e);
+            throw new WalletOperationException(
+                    "Payment initiation failed. Please check your payment method.",
+                    "Stripe PaymentIntent creation failed for user " + addMoneyRequest.getUserId(),
+                    e
+            );
         } finally {
             userLock.unlock();
             // Clean up lock if no other threads are waiting
@@ -334,7 +343,7 @@ public class WalletServiceImpl implements WalletService {
 
             if (wallet.getBalance().compareTo(totalDeduction) < 0) {
                 throw new InsufficientBalanceException(
-                        String.format("Insufficient balance for withdrawal including fees. Available: %.2f, Required: %.2f (amount: %.2f)",
+                        String.format("Insufficient balance for withdrawal. Available: %.2f, Required: %.2f (amount: %.2f)",
                                 wallet.getAvailableBalance(), totalDeduction, withdrawMoneyRequest.getAmount())
                 );
             }
@@ -379,7 +388,11 @@ public class WalletServiceImpl implements WalletService {
                     .build();
         } catch (Exception e) {
             log.error("Error processing withdrawal for user {}: {}", withdrawMoneyRequest.getUserId(), e.getMessage());
-            throw new RuntimeException("Failed to process withdrawal", e);
+            throw new WalletOperationException(
+                    "Withdrawal failed. Please try again.",
+                    "Withdrawal processing error for user " + withdrawMoneyRequest.getUserId(),
+                    e
+            );
         } finally {
             userLock.unlock();
             lockManager.releaseUserLock(withdrawMoneyRequest.getUserId());
