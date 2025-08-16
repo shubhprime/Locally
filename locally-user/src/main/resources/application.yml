@@ -31,11 +31,10 @@ spring:
             required: true
 
   redis:
-    url: rediss://:${REDIS_PASSWORD}@${REDIS_HOST}:${REDIS_PORT}
-#    ssl: true
-#    host: ${REDIS_HOST}
-#    port: ${REDIS_PORT}
-#    password: ${REDIS_PASSWORD}
+    ssl: true
+    host: ${REDIS_HOST}
+    port: ${REDIS_PORT}
+    password: ${REDIS_PASSWORD}
 
   cache:
     type: redis

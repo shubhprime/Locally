@@ -31,7 +31,7 @@ spring:
             required: true
 
   redis:
-    url: rediss://:${REDIS_PASSWORD}@${REDIS_HOST}
+    url: rediss://:${REDIS_PASSWORD}@${REDIS_HOST}:${REDIS_PORT}
 #    ssl: true
 #    host: ${REDIS_HOST}
 #    port: ${REDIS_PORT}
