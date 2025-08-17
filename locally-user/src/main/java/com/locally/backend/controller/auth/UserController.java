@@ -88,7 +88,8 @@ public class UserController {
                     .success(true)
                     .responseMessage(appResponse.getResponseMessage())
                     .accessToken(appResponse.getAccessToken())           // access token
-                    .refreshToken(appResponse.getRefreshToken())         // refresh token
+                    .refreshToken(appResponse.getRefreshToken())        // refresh token
+                    .data(appResponse.getData())
                     .build();
 
             return ResponseEntity.ok(responseWithTokens);
