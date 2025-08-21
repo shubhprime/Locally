@@ -1,11 +1,13 @@
 package com.locally.locally_backend_engine.config;
 
+import com.locally.locally_backend_engine.utils.JwtUtil;
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
 import io.github.bucket4j.Refill;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -16,6 +18,9 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 @Component
 public class RateLimitingInterceptor implements HandlerInterceptor {
+
+    @Autowired
+    private JwtUtil jwtUtil;
 
     private final ConcurrentHashMap<String, Bucket> cache = new ConcurrentHashMap<>();
 
@@ -66,25 +71,31 @@ public class RateLimitingInterceptor implements HandlerInterceptor {
     private String getClientId(HttpServletRequest request) {
         // Priority order for client identification:
 
-        // 1. Try to get user ID from JWT token (if available)
+        // 1. Try to get service token first (for service-to-service calls)
+        String serviceToken = extractServiceTokenFromRequest(request);
+        if (serviceToken != null) {
+            return "service:" + serviceToken; // Service calls get highest limits
+        }
+
+        // 2. Try to get user ID from JWT token (if available)
         String userId = extractUserIdFromToken(request);
         if (userId != null) {
             return "user:" + userId;
         }
 
-        // 2. Try to get API key from headers
+        // 3. Try to get API key from headers
         String apiKey = request.getHeader("X-API-Key");
         if (apiKey != null && !apiKey.isEmpty()) {
             return "api:" + apiKey;
         }
 
-        // 3. Try to get device ID from headers (for mobile apps)
+        // 4. Try to get device ID from headers (for mobile apps)
         String deviceId = request.getHeader("X-Device-ID");
         if (deviceId != null && !deviceId.isEmpty()) {
             return "device:" + deviceId;
         }
 
-        // 4. Fall back to IP address
+        // 5. Fall back to IP address
         String clientIp = getClientIpAddress(request);
         return "ip:" + clientIp;
     }
@@ -120,11 +131,31 @@ public class RateLimitingInterceptor implements HandlerInterceptor {
         return request.getRemoteAddr();
     }
 
+    private String extractServiceTokenFromRequest(HttpServletRequest request) {
+        try {
+            String authHeader = request.getHeader("Authorization");
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                String token = authHeader.substring(7);
+                // Use your existing JWT utility to check if it's a service token
+                if (jwtUtil.isServiceTokenValid(token)) {
+                    // You could return the service name or just a generic identifier
+                    return "internal-service";
+                }
+            }
+        } catch (Exception e) {
+            log.debug("Failed to extract service token: {}", e.getMessage());
+        }
+        return null;
+    }
+
     private Bucket createNewBucket(String clientId) {
         // Different limits based on client type
         int limit = requestsPerMinute;
 
-        if (clientId.startsWith("user:")) {
+        if (clientId.startsWith("service:")) {
+            // Service-to-service calls get very high limits
+            limit = requestsPerMinute * 10; // Much higher for internal services
+        } else if (clientId.startsWith("user:")) {
             // Authenticated users get higher limits
             limit = requestsPerMinute * 2;
         } else if (clientId.startsWith("api:")) {
