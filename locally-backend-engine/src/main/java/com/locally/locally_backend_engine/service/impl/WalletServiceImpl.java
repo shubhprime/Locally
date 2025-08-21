@@ -111,9 +111,14 @@ public class WalletServiceImpl implements WalletService {
     @Override
     @Transactional(readOnly = true)
     public WalletDTO getWalletByUserId(Long userId) {
-        Wallet wallet = walletRepository.findByUserId(userId)
-                .orElseThrow(() -> new WalletNotFoundException("Wallet not found for user: " + userId));
-        return convertToDto(wallet);
+        Optional<Wallet> walletOpt = walletRepository.findByUserId(userId);
+
+        if (walletOpt.isEmpty()) {
+            log.info("Wallet not found for user: {}", userId);
+            return null; // Return null when wallet doesn't exist
+        }
+
+        return convertToDto(walletOpt.get());
     }
 
     @Override
