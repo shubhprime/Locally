@@ -63,6 +63,15 @@ public class WalletServiceImpl implements WalletService {
 
             WalletDTO walletDTO = engineWalletClient.getWalletByUserId("Bearer " + serviceToken).getBody();
 
+            if (walletDTO == null) {
+                return AppResponse.<WalletDTO>builder()
+                        .responseCode("404")
+                        .success(false)
+                        .responseMessage("Wallet not found for user: " + email)
+                        .data(null)
+                        .build();
+            }
+
             return AppResponse.<WalletDTO>builder()
                     .responseCode("200")
                     .success(true)

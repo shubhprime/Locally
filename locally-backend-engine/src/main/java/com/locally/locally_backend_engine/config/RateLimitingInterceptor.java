@@ -24,38 +24,33 @@ public class RateLimitingInterceptor implements HandlerInterceptor {
 
     private final ConcurrentHashMap<String, Bucket> cache = new ConcurrentHashMap<>();
 
-    private final ConcurrentHashMap<String, Long> lastAccessTime = new ConcurrentHashMap<>();
-
     @Value("${app.rate-limit.requests-per-minute:100}")
     private int requestsPerMinute;
 
-    @Value("${app.rate-limit.cache-cleanup-interval:300000}")
-    private long cacheCleanupInterval;
-
-    @Value("${app.rate-limit.cache-entry-ttl:600000}")
-    private long cacheEntryTtl;
-
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
-        String clientId = getClientId(request);
 
-        // Update last access time
-        lastAccessTime.put(clientId, System.currentTimeMillis());
+        // Check if it's a service token - if so, bypass rate limiting
+        if (isServiceCall(request)) {
+            log.debug("Service call detected, bypassing rate limit for path: {}", request.getRequestURI());
+            return true;
+        }
 
-        Bucket bucket = cache.computeIfAbsent(clientId, this::createNewBucket);
+        // For non-service calls, apply rate limiting based on IP
+        String clientIp = getClientIpAddress(request);
+        Bucket bucket = cache.computeIfAbsent(clientIp, this::createNewBucket);
 
         if (bucket.tryConsume(1)) {
-            // Add rate limit headers
-            response.setHeader("X-RateLimit-Limit", String.valueOf(requestsPerMinute));
             response.setHeader("X-RateLimit-Remaining", String.valueOf(bucket.getAvailableTokens()));
             return true;
         } else {
-            response.setStatus(429); // Too Many Requests
+            // Rate limit exceeded
+            response.setStatus(429);
             response.setHeader("X-RateLimit-Limit", String.valueOf(requestsPerMinute));
             response.setHeader("X-RateLimit-Remaining", "0");
-            response.setHeader("Retry-After", "60"); // Retry after 1 minute
+            response.setHeader("Retry-After", "60");
 
-            log.warn("Rate limit exceeded for client: {} on path: {}", clientId, request.getRequestURI());
+            log.warn("Rate limit exceeded for IP: {} on path: {}", clientIp, request.getRequestURI());
 
             try {
                 response.getWriter().write("{\"error\":\"Rate limit exceeded\",\"message\":\"Too many requests. Please try again later.\"}");
@@ -68,58 +63,22 @@ public class RateLimitingInterceptor implements HandlerInterceptor {
         }
     }
 
-    private String getClientId(HttpServletRequest request) {
-        // Priority order for client identification:
-
-        // 1. Try to get service token first (for service-to-service calls)
-        String serviceToken = extractServiceTokenFromRequest(request);
-        if (serviceToken != null) {
-            return "service:" + serviceToken; // Service calls get highest limits
-        }
-
-        // 2. Try to get user ID from JWT token (if available)
-        String userId = extractUserIdFromToken(request);
-        if (userId != null) {
-            return "user:" + userId;
-        }
-
-        // 3. Try to get API key from headers
-        String apiKey = request.getHeader("X-API-Key");
-        if (apiKey != null && !apiKey.isEmpty()) {
-            return "api:" + apiKey;
-        }
-
-        // 4. Try to get device ID from headers (for mobile apps)
-        String deviceId = request.getHeader("X-Device-ID");
-        if (deviceId != null && !deviceId.isEmpty()) {
-            return "device:" + deviceId;
-        }
-
-        // 5. Fall back to IP address
-        String clientIp = getClientIpAddress(request);
-        return "ip:" + clientIp;
-    }
-
-    private String extractUserIdFromToken(HttpServletRequest request) {
+    private boolean isServiceCall(HttpServletRequest request) {
         try {
             String authHeader = request.getHeader("Authorization");
             if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                // Here you would decode the JWT token and extract user ID
-                // This is a placeholder - implement according to your JWT setup
-                // String token = authHeader.substring(7);
-                // return jwtService.getUserIdFromToken(token);
-                return null; // Placeholder
+                String token = authHeader.substring(7);
+                return jwtUtil.isServiceTokenValid(token);
             }
         } catch (Exception e) {
-            log.debug("Failed to extract user ID from token: {}", e.getMessage());
+            log.debug("Error checking service token: {}", e.getMessage());
         }
-        return null;
+        return false;
     }
 
     private String getClientIpAddress(HttpServletRequest request) {
         String xForwardedFor = request.getHeader("X-Forwarded-For");
         if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
-            // X-Forwarded-For can contain multiple IPs, get the first one
             return xForwardedFor.split(",")[0].trim();
         }
 
@@ -131,42 +90,9 @@ public class RateLimitingInterceptor implements HandlerInterceptor {
         return request.getRemoteAddr();
     }
 
-    private String extractServiceTokenFromRequest(HttpServletRequest request) {
-        try {
-            String authHeader = request.getHeader("Authorization");
-            if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                String token = authHeader.substring(7);
-                // Use your existing JWT utility to check if it's a service token
-                if (jwtUtil.isServiceTokenValid(token)) {
-                    // You could return the service name or just a generic identifier
-                    return "internal-service";
-                }
-            }
-        } catch (Exception e) {
-            log.debug("Failed to extract service token: {}", e.getMessage());
-        }
-        return null;
-    }
-
-    private Bucket createNewBucket(String clientId) {
-        // Different limits based on client type
-        int limit = requestsPerMinute;
-
-        if (clientId.startsWith("service:")) {
-            // Service-to-service calls get very high limits
-            limit = requestsPerMinute * 10; // Much higher for internal services
-        } else if (clientId.startsWith("user:")) {
-            // Authenticated users get higher limits
-            limit = requestsPerMinute * 2;
-        } else if (clientId.startsWith("api:")) {
-            // API keys get even higher limits
-            limit = requestsPerMinute * 5;
-        } else if (clientId.startsWith("ip:")) {
-            // IP-based limits are more restrictive
-            limit = requestsPerMinute / 2;
-        }
-
-        Bandwidth bandwidth = Bandwidth.classic(limit, Refill.intervally(limit, Duration.ofMinutes(1)));
+    private Bucket createNewBucket(String clientIp) {
+        // Simple rate limiting: 100 requests per minute per IP
+        Bandwidth bandwidth = Bandwidth.classic(requestsPerMinute, Refill.intervally(requestsPerMinute, Duration.ofMinutes(1)));
         return Bucket.builder()
                 .addLimit(bandwidth)
                 .build();
