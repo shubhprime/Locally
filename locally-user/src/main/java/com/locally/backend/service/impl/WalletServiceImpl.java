@@ -93,6 +93,8 @@ public class WalletServiceImpl implements WalletService {
             User user = userRepository.findByEmail(addMoneyRequest.getEmail())
                     .orElseThrow(() -> new RuntimeException(AccountUtils.USER_NOT_FOUND));
 
+            addMoneyRequest.setUserId(user.getId());
+
             log.info("Adding money to wallet for user: {}, amount: {}", addMoneyRequest.getUserId(), addMoneyRequest.getAmount());
 
             // Generate service token
@@ -117,6 +119,8 @@ public class WalletServiceImpl implements WalletService {
         try {
             User user = userRepository.findByEmail(withdrawMoneyRequest.getEmail())
                     .orElseThrow(() -> new RuntimeException(AccountUtils.USER_NOT_FOUND));
+
+            withdrawMoneyRequest.setUserId(user.getId());
 
             log.info("Withdrawing money from wallet for user: {}, amount: {}", withdrawMoneyRequest.getUserId(), withdrawMoneyRequest.getAmount());
 
