@@ -79,6 +79,11 @@ logging:
 # Rate limiting configuration
 app:
   rate-limit:
+    enabled: false
     requests-per-minute: 1000
     cache-cleanup-interval: 300000
     cache-entry-ttl: 600000
+
+  audit:
+    enabled: true
+    performance-monitoring: false
